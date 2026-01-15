@@ -60,11 +60,6 @@
       font-size: 14px;
     }
 
-    .header-right {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
     /* 메인 컨텐츠 */
     .main {
       flex: 1;
@@ -169,6 +164,11 @@
       margin-left: 8px;
       flex-shrink: 0;
     }
+    
+    .link-badge.embed {
+      background: #dcfce7;
+      color: #16a34a;
+    }
 
     /* 빈 상태 */
     .empty-state {
@@ -183,39 +183,102 @@
       opacity: 0.5;
     }
 
-    /* [수정] 앱 뷰어 (Iframe) 스타일 - 더 강력한 자르기 적용 */
-    .app-viewer-overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: #fff; z-index: 2000;
-      display: flex; flex-direction: column;
-      visibility: hidden; opacity: 0; transition: opacity 0.3s;
+    /* 버튼 */
+    button {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid #d9d9d9;
+      background: #fff;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .app-viewer-overlay.show { visibility: visible; opacity: 1; }
+    button:hover { background: #f5f5f5; }
+
+    /* ===== 앱 뷰어 (Iframe) ===== */
+    .app-viewer-overlay {
+      position: fixed; 
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #fff; 
+      z-index: 2000;
+      display: flex; 
+      flex-direction: column;
+      visibility: hidden; 
+      opacity: 0; 
+      transition: opacity 0.2s;
+    }
+    
+    .app-viewer-overlay.show { 
+      visibility: visible; 
+      opacity: 1; 
+    }
 
     .app-header {
-      height: 48px; background: #fff; border-bottom: 1px solid var(--line);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
-      /* 헤더가 Iframe 위를 확실히 덮도록 z-index 추가 */
+      height: 48px; 
+      background: #fff; 
+      border-bottom: 1px solid var(--line);
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      padding: 0 16px;
       position: relative; 
-      z-index: 10; 
+      z-index: 10;
+      flex-shrink: 0;
+    }
+    
+    .app-header-title {
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .iframe-container {
-      flex: 1; width: 100%; height: 100%;
-      overflow: hidden; /* 넘치는 부분 숨김 (필수) */
+      flex: 1; 
+      width: 100%; 
+      overflow: hidden;
       position: relative;
-      background: #fff; /* 로딩 중 흰 배경 유지 */
+      background: #f6f6f6;
     }
 
     .crop-iframe {
-      width: 100%; border: none;
-      
-      /* ★ 핵심 수정: 위쪽을 50px로 과감하게 당김 (기존 -25px -> -50px) */
+      width: 100%; 
+      border: none;
       position: absolute;
       top: -50px; 
-      
-      /* 당긴 만큼 높이를 더 늘려줘야 아래가 안 잘림 */
-      height: calc(100% + 50px); 
+      height: calc(100% + 50px);
+      background: #fff;
+    }
+    
+    /* 로딩 표시 */
+    .iframe-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: var(--muted);
+    }
+    
+    .iframe-loading .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e9e9e9;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -233,42 +296,64 @@
   <main class="main">
     <div class="container">
       <div class="section-title">바로가기</div>
-      <div class="link-grid" id="linkGrid">
-        <!-- 링크 카드들이 여기에 렌더링됩니다 -->
-      </div>
+      <div class="link-grid" id="linkGrid"></div>
     </div>
   </main>
 
+  <!-- 앱 뷰어 (iframe) -->
+  <div class="app-viewer-overlay" id="appViewer">
+    <div class="app-header">
+      <div class="app-header-title">
+        <span>🟢</span>
+        <span id="appViewerTitle">앱 이름</span>
+      </div>
+      <button onclick="closeAppViewer()">✕ 닫기</button>
+    </div>
+    <div class="iframe-container">
+      <div class="iframe-loading" id="iframeLoading">
+        <div class="spinner"></div>
+        <div>로딩 중...</div>
+      </div>
+      <iframe id="contentFrame" class="crop-iframe" onload="hideLoading()"></iframe>
+    </div>
+  </div>
+
   <script>
-    // ===== 링크 데이터 (여기서 직접 수정) =====
+    // ===== 링크 데이터 =====
+    // embed: true → iframe 내부에서 열기 (GAS 경고바 숨김)
+    // embed: false 또는 생략 → 새 탭에서 열기
     const LINKS = [
       { 
         id: 1, 
         name: 'ASR 엔진', 
         url: 'https://script.google.com/macros/s/AKfycbzsGJg8T0YkcBui86nRrqJ3RCO5GlsM4FqtvBw6_R5VC21Aa96360e2X70Np4qE-aWXKw/exec', 
         desc: '음성 인식 프로그램', 
-        icon: 'green'
+        icon: 'green',
+        embed: true  // ★ GAS 앱은 embed: true
       },
       { 
         id: 2, 
         name: 'Google', 
         url: 'https://google.com', 
         desc: '검색 엔진', 
-        icon: 'blue' 
+        icon: 'blue',
+        embed: false  // 새 탭
       },
       { 
         id: 3, 
         name: 'GitHub', 
         url: 'https://github.com', 
         desc: '소스코드 저장소', 
-        icon: 'gray' 
+        icon: 'gray',
+        embed: false
       },
       { 
         id: 4, 
         name: 'YouTube', 
         url: 'https://youtube.com', 
         desc: '동영상 플랫폼', 
-        icon: 'red' 
+        icon: 'red',
+        embed: false
       },
     ];
 
@@ -291,22 +376,82 @@
         return;
       }
 
-      grid.innerHTML = LINKS.map(link => `
-        <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-card">
-          <div class="link-card-header">
-            <div class="link-icon ${link.icon || 'blue'}">${getIconEmoji(link.icon)}</div>
-            <div class="link-info">
-              <div class="link-name">${escapeHtml(link.name)}</div>
-              ${link.desc ? `<div class="link-desc">${escapeHtml(link.desc)}</div>` : ''}
-            </div>
-          </div>
-          <div class="link-footer">
-            <div class="link-url">${escapeHtml(shortenUrl(link.url))}</div>
-            <div class="link-badge">새 탭 ↗</div>
-          </div>
-        </a>
-      `).join('');
+      grid.innerHTML = LINKS.map(link => {
+        const isEmbed = link.embed === true;
+        
+        if (isEmbed) {
+          // iframe으로 열기
+          return `
+            <a href="#" onclick="openAppViewer('${escapeAttr(link.url)}', '${escapeAttr(link.name)}'); return false;" class="link-card">
+              <div class="link-card-header">
+                <div class="link-icon ${link.icon || 'blue'}">${getIconEmoji(link.icon)}</div>
+                <div class="link-info">
+                  <div class="link-name">${escapeHtml(link.name)}</div>
+                  ${link.desc ? `<div class="link-desc">${escapeHtml(link.desc)}</div>` : ''}
+                </div>
+              </div>
+              <div class="link-footer">
+                <div class="link-url">${escapeHtml(shortenUrl(link.url))}</div>
+                <div class="link-badge embed">내부 실행</div>
+              </div>
+            </a>
+          `;
+        } else {
+          // 새 탭으로 열기
+          return `
+            <a href="${escapeAttr(link.url)}" target="_blank" rel="noopener noreferrer" class="link-card">
+              <div class="link-card-header">
+                <div class="link-icon ${link.icon || 'blue'}">${getIconEmoji(link.icon)}</div>
+                <div class="link-info">
+                  <div class="link-name">${escapeHtml(link.name)}</div>
+                  ${link.desc ? `<div class="link-desc">${escapeHtml(link.desc)}</div>` : ''}
+                </div>
+              </div>
+              <div class="link-footer">
+                <div class="link-url">${escapeHtml(shortenUrl(link.url))}</div>
+                <div class="link-badge">새 탭 ↗</div>
+              </div>
+            </a>
+          `;
+        }
+      }).join('');
     }
+
+    // ===== 앱 뷰어 (iframe) =====
+    function openAppViewer(url, title) {
+      const viewer = document.getElementById('appViewer');
+      const frame = document.getElementById('contentFrame');
+      const titleEl = document.getElementById('appViewerTitle');
+      const loading = document.getElementById('iframeLoading');
+
+      titleEl.textContent = title;
+      loading.style.display = 'block';
+      frame.src = url;
+      viewer.classList.add('show');
+      
+      // 뒤로가기 방지
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAppViewer() {
+      const viewer = document.getElementById('appViewer');
+      const frame = document.getElementById('contentFrame');
+      
+      viewer.classList.remove('show');
+      frame.src = '';
+      document.body.style.overflow = '';
+    }
+    
+    function hideLoading() {
+      document.getElementById('iframeLoading').style.display = 'none';
+    }
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAppViewer();
+      }
+    });
 
     // ===== 아이콘 =====
     function getIconEmoji(iconType) {
@@ -328,11 +473,14 @@
       div.textContent = text;
       return div.innerHTML;
     }
+    
+    function escapeAttr(text) {
+      return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
 
     function shortenUrl(url) {
       try {
         const u = new URL(url);
-        // script.google.com은 짧게 표시
         if (u.hostname === 'script.google.com') {
           return 'Google Apps Script';
         }
