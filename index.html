@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preman Launcher</title>
+  <style>
+    :root {
+      --bg: #f6f6f6;
+      --card: #ffffff;
+      --text: #111;
+      --muted: #777;
+      --line: #e9e9e9;
+      --primary: #111;
+      --primary-fg: #fff;
+      --accent: #3b82f6;
+      --r: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 헤더 */
+    .header {
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .header-right {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* 메인 컨텐츠 */
+    .main {
+      flex: 1;
+      padding: 32px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    /* 링크 카드 그리드 */
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .link-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .link-card:hover {
+      border-color: #ccc;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      transform: translateY(-2px);
+    }
+
+    .link-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .link-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .link-icon.blue { background: #dbeafe; color: #2563eb; }
+    .link-icon.green { background: #dcfce7; color: #16a34a; }
+    .link-icon.purple { background: #f3e8ff; color: #9333ea; }
+    .link-icon.orange { background: #ffedd5; color: #ea580c; }
+    .link-icon.gray { background: #f3f4f6; color: #6b7280; }
+    .link-icon.red { background: #fee2e2; color: #dc2626; }
+    .link-icon.cyan { background: #cffafe; color: #0891b2; }
+
+    .link-info { flex: 1; }
+    .link-name { font-weight: 700; font-size: 15px; }
+    .link-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    
+    .link-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+    
+    .link-url { 
+      font-size: 11px; 
+      color: var(--accent); 
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+    
+    .link-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #f3f4f6;
+      color: #6b7280;
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+
+    /* 빈 상태 */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      Preman Launcher
+    </div>
+    <div class="header-right">
+      새 탭에서 열림 ↗
+    </div>
+  </header>
+
+  <!-- 메인 -->
+  <main class="main">
+    <div class="container">
+      <div class="section-title">바로가기</div>
+      <div class="link-grid" id="linkGrid">
+        <!-- 링크 카드들이 여기에 렌더링됩니다 -->
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ===== 링크 데이터 (여기서 직접 수정) =====
+    const LINKS = [
+      { 
+        id: 1, 
+        name: 'ASR 엔진', 
+        url: 'https://script.google.com/macros/s/AKfycbzsGJg8T0YkcBui86nRrqJ3RCO5GlsM4FqtvBw6_R5VC21Aa96360e2X70Np4qE-aWXKw/exec', 
+        desc: '음성 인식 프로그램', 
+        icon: 'green'
+      },
+      { 
+        id: 2, 
+        name: 'Google', 
+        url: 'https://google.com', 
+        desc: '검색 엔진', 
+        icon: 'blue' 
+      },
+      { 
+        id: 3, 
+        name: 'GitHub', 
+        url: 'https://github.com', 
+        desc: '소스코드 저장소', 
+        icon: 'gray' 
+      },
+      { 
+        id: 4, 
+        name: 'YouTube', 
+        url: 'https://youtube.com', 
+        desc: '동영상 플랫폼', 
+        icon: 'red' 
+      },
+    ];
+
+    // ===== 초기화 =====
+    function init() {
+      renderLinks();
+    }
+
+    // ===== 링크 렌더링 =====
+    function renderLinks() {
+      const grid = document.getElementById('linkGrid');
+      
+      if (LINKS.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-icon">🔗</div>
+            <div>등록된 링크가 없습니다</div>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = LINKS.map(link => `
+        <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="link-card">
+          <div class="link-card-header">
+            <div class="link-icon ${link.icon || 'blue'}">${getIconEmoji(link.icon)}</div>
+            <div class="link-info">
+              <div class="link-name">${escapeHtml(link.name)}</div>
+              ${link.desc ? `<div class="link-desc">${escapeHtml(link.desc)}</div>` : ''}
+            </div>
+          </div>
+          <div class="link-footer">
+            <div class="link-url">${escapeHtml(shortenUrl(link.url))}</div>
+            <div class="link-badge">새 탭 ↗</div>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    // ===== 아이콘 =====
+    function getIconEmoji(iconType) {
+      const icons = {
+        blue: '🔵',
+        green: '🟢',
+        purple: '🟣',
+        orange: '🟠',
+        gray: '⚪',
+        red: '🔴',
+        cyan: '🔵'
+      };
+      return icons[iconType] || '🔗';
+    }
+
+    // ===== 유틸리티 =====
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function shortenUrl(url) {
+      try {
+        const u = new URL(url);
+        // script.google.com은 짧게 표시
+        if (u.hostname === 'script.google.com') {
+          return 'Google Apps Script';
+        }
+        return u.hostname.replace('www.', '');
+      } catch {
+        return url;
+      }
+    }
+
+    // 초기화 실행
+    init();
+  </script>
+</body>
+</html>
