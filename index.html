@@ -1,481 +1,1006 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Preman Launcher</title>
-  <style>
-    :root {
-      --bg: #f6f6f6;
-      --card: #ffffff;
-      --text: #111;
-      --muted: #777;
-      --line: #e9e9e9;
-      --primary: #111;
-      --primary-fg: #fff;
-      --accent: #3b82f6;
-      --r: 12px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preman Launcher</title>
+    <style>
+        /* ===== 테마 변수 ===== */
+        :root {
+            --transition-theme: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+        /* 다크 테마 */
+        [data-theme="dark"] {
+            --bg: #1a1a2e;
+            --bg-light: #16213e;
+            --sidebar: #0f0f1a;
+            --card: #1f1f3a;
+            --text: #ffffff;
+            --text-muted: #8888aa;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #10b981;
+            --line: #2a2a4a;
+            --scrollbar-track: #1a1a2e;
+            --scrollbar-thumb: #3a3a5a;
+            --scrollbar-thumb-hover: #4a4a6a;
+        }
 
-    /* 헤더 */
-    .header {
-      background: var(--card);
-      border-bottom: 1px solid var(--line);
-      padding: 0 24px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+        /* 라이트 테마 - 원본 스타일 기반 */
+        [data-theme="light"] {
+            --bg: #f6f6f6;
+            --bg-light: #fafafa;
+            --sidebar: #ffffff;
+            --card: #ffffff;
+            --text: #111111;
+            --text-muted: #777777;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --success: #10b981;
+            --line: #e9e9e9;
+            --scrollbar-track: #f0f0f0;
+            --scrollbar-thumb: #d1d1d1;
+            --scrollbar-thumb-hover: #b1b1b1;
+        }
 
-    .brand {
-      font-weight: 800;
-      font-size: 18px;
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    .brand-icon {
-      width: 28px;
-      height: 28px;
-      background: var(--primary);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 14px;
-    }
+        /* ===== 커스텀 스크롤바 ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
 
-    /* 메인 컨텐츠 */
-    .main {
-      flex: 1;
-      padding: 32px;
-      display: flex;
-      justify-content: center;
-    }
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+            border-radius: 4px;
+        }
 
-    .container {
-      width: 100%;
-      max-width: 800px;
-    }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
 
-    /* 링크 카드 그리드 */
-    .section-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--scrollbar-thumb-hover);
+            }
 
-    .link-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 12px;
-      margin-bottom: 32px;
-    }
+        ::-webkit-scrollbar-corner {
+            background: var(--scrollbar-track);
+        }
 
-    .link-card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      padding: 20px;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+        /* Firefox 스크롤바 */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+        }
 
-    .link-card:hover {
-      border-color: #ccc;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      transform: translateY(-2px);
-    }
+        body {
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: var(--transition-theme);
+        }
 
-    .link-card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+        /* ===== 헤더 ===== */
+        .header {
+            background: var(--sidebar);
+            border-bottom: 1px solid var(--line);
+            padding: 0 20px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            transition: var(--transition-theme);
+        }
 
-    .link-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
+        .brand {
+            font-weight: 800;
+            font-size: 16px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    .link-icon.blue { background: #dbeafe; color: #2563eb; }
-    .link-icon.green { background: #dcfce7; color: #16a34a; }
-    .link-icon.purple { background: #f3e8ff; color: #9333ea; }
-    .link-icon.orange { background: #ffedd5; color: #ea580c; }
-    .link-icon.gray { background: #f3f4f6; color: #6b7280; }
-    .link-icon.red { background: #fee2e2; color: #dc2626; }
-    .link-icon.cyan { background: #cffafe; color: #0891b2; }
+        .brand-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
 
-    .link-info { flex: 1; }
-    .link-name { font-weight: 700; font-size: 15px; }
-    .link-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    
-    .link-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 4px;
-    }
-    
-    .link-url { 
-      font-size: 11px; 
-      color: var(--accent); 
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-    }
-    
-    .link-badge {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: #f3f4f6;
-      color: #6b7280;
-      margin-left: 8px;
-      flex-shrink: 0;
-    }
-    
-    .link-badge.embed {
-      background: #dcfce7;
-      color: #16a34a;
-    }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
 
-    /* 빈 상태 */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-    }
+        .header-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-    .empty-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-      opacity: 0.5;
-    }
+            .header-link:hover {
+                color: var(--text);
+            }
 
-    /* 버튼 */
-    button {
-      height: 36px;
-      padding: 0 14px;
-      border-radius: 8px;
-      border: 1px solid #d9d9d9;
-      background: #fff;
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    button:hover { background: #f5f5f5; }
+        /* 테마 토글 */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
 
-    /* ===== 앱 뷰어 (Iframe) ===== */
-    .app-viewer-overlay {
-      position: fixed; 
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: #fff; 
-      z-index: 2000;
-      display: flex; 
-      flex-direction: column;
-      visibility: hidden; 
-      opacity: 0; 
-      transition: opacity 0.2s;
-    }
-    
-    .app-viewer-overlay.show { 
-      visibility: visible; 
-      opacity: 1; 
-    }
+        .theme-toggle-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
 
-    .app-header {
-      height: 48px; 
-      background: #fff; 
-      border-bottom: 1px solid var(--line);
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      padding: 0 16px;
-      position: relative; 
-      z-index: 10;
-      flex-shrink: 0;
-    }
-    
-    .app-header-title {
-      font-weight: 700;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            position: relative;
+            transition: all 0.3s;
+        }
 
-    .iframe-container {
-      flex: 1; 
-      width: 100%; 
-      overflow: hidden;
-      position: relative;
-      background: #f6f6f6;
-    }
+            .toggle-switch::before {
+                content: '🌙';
+                position: absolute;
+                left: 3px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 18px;
+                height: 18px;
+                background: var(--accent);
+                border-radius: 50%;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+            }
 
-    .crop-iframe {
-      width: 100%; 
-      border: none;
-      position: absolute;
-      top: -50px; 
-      height: calc(100% + 50px);
-      background: #fff;
-    }
-    
-    /* 로딩 표시 */
-    .iframe-loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      color: var(--muted);
-    }
-    
-    .iframe-loading .spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid #e9e9e9;
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 12px;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
+        [data-theme="light"] .toggle-switch::before {
+            left: calc(100% - 21px);
+            content: '☀️';
+        }
+
+        /* ===== 메인 레이아웃 ===== */
+        .main-layout {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ===== 사이드바 ===== */
+        .sidebar {
+            width: 220px;
+            background: var(--sidebar);
+            border-right: 1px solid var(--line);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: var(--transition-theme);
+        }
+
+        .sidebar-section {
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .app-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .app-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+            .app-item:hover {
+                background: var(--bg);
+            }
+
+            .app-item.active {
+                background: var(--bg);
+                border-color: var(--line);
+            }
+
+        [data-theme="light"] .app-item.active {
+            background: var(--bg);
+            border-color: var(--line);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .app-item-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .app-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .app-item-name {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .app-item-status {
+            font-size: 10px;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+
+        /* ===== 콘텐츠 영역 ===== */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg);
+            transition: var(--transition-theme);
+        }
+
+        /* 배너 - 가독성 개선 */
+        .banner {
+            height: 220px;
+            background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
+            position: relative;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        /* 배너 하단 그라데이션 오버레이 */
+        .banner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 140px;
+            background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+            transition: var(--transition-theme);
+        }
+
+        .banner-content {
+            position: absolute;
+            bottom: 24px;
+            left: 32px;
+            right: 32px;
+        }
+
+        .banner-badge {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .banner-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .banner-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
+        }
+
+        /* 상세 영역 */
+        .detail-area {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
+        }
+
+        /* 액션 버튼들 */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .btn {
+            height: 46px;
+            padding: 0 28px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            min-width: 160px;
+            justify-content: center;
+        }
+
+            .btn-primary:hover {
+                background: var(--accent-hover);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            }
+
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--line);
+        }
+
+            .btn-secondary:hover {
+                background: var(--bg-light);
+                border-color: var(--text-muted);
+            }
+
+        /* 정보 그리드 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .info-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px 18px;
+            border: 1px solid var(--line);
+            transition: var(--transition-theme);
+        }
+
+        .info-card-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .info-card-value {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        /* 새 소식 */
+        .news-section {
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            overflow: hidden;
+            transition: var(--transition-theme);
+        }
+
+        .news-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--line);
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .news-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .news-item {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--line);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+            .news-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-item:hover {
+                background: var(--bg);
+            }
+
+        .news-item-date {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .news-item-title {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .news-item-tag {
+            display: inline-block;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: var(--accent);
+            color: white;
+            margin-right: 8px;
+            font-weight: 600;
+        }
+
+            .news-item-tag.update {
+                background: #10b981;
+            }
+
+            .news-item-tag.notice {
+                background: #f59e0b;
+            }
+
+        /* ===== 앱 뷰어 (iframe) ===== */
+        .app-viewer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+            .app-viewer-overlay.show {
+                visibility: visible;
+                opacity: 1;
+            }
+
+        .app-viewer-header {
+            height: 48px;
+            background: var(--sidebar);
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            flex-shrink: 0;
+            transition: var(--transition-theme);
+        }
+
+        .app-viewer-title {
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-close {
+            height: 32px;
+            padding: 0 14px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+            .btn-close:hover {
+                background: var(--bg-light);
+            }
+
+        .iframe-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg);
+        }
+
+        .crop-iframe {
+            width: 100%;
+            border: none;
+            position: absolute;
+            top: -50px;
+            height: calc(100% + 50px);
+            background: #fff;
+        }
+
+        .iframe-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--line);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== 푸터 ===== */
+        .footer {
+            background: var(--sidebar);
+            border-top: 1px solid var(--line);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            transition: var(--transition-theme);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+            .footer-link:hover {
+                color: var(--text);
+            }
+
+        /* ===== 반응형 ===== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 180px;
+            }
+
+            .banner {
+                height: 180px;
+            }
+
+            .banner-title {
+                font-size: 24px;
+            }
+
+            .detail-area {
+                padding: 16px 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- 헤더 -->
-  <header class="header">
-    <div class="brand">
-      <div class="brand-icon">⚡</div>
-      Preman Launcher
-    </div>
-  </header>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">⚡</div>
+            Preman Launcher
+        </div>
+        <div class="header-actions">
+            <a href="#" class="header-link" onclick="openGuide(); return false;">📖 도움말</a>
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <span class="theme-toggle-label">테마</span>
+                <div class="toggle-switch"></div>
+            </div>
+        </div>
+    </header>
 
-  <!-- 메인 -->
-  <main class="main">
-    <div class="container">
-      <div class="section-title">바로가기</div>
-      <div class="link-grid" id="linkGrid"></div>
-    </div>
-  </main>
+    <!-- 메인 레이아웃 -->
+    <div class="main-layout">
 
-  <!-- 앱 뷰어 (iframe) -->
-  <div class="app-viewer-overlay" id="appViewer">
-    <div class="app-header">
-      <div class="app-header-title">
-        <span>🟢</span>
-        <span id="appViewerTitle">앱 이름</span>
-      </div>
-      <button onclick="closeAppViewer()">✕ 닫기</button>
-    </div>
-    <div class="iframe-container">
-      <div class="iframe-loading" id="iframeLoading">
-        <div class="spinner"></div>
-        <div>로딩 중...</div>
-      </div>
-      <iframe id="contentFrame" class="crop-iframe" onload="hideLoading()"></iframe>
-    </div>
-  </div>
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">애플리케이션</div>
+                <div class="app-list" id="appList"></div>
+            </div>
+        </aside>
 
-  <script>
-    // ===== 링크 데이터 =====
-    // embed: true → iframe 내부에서 열기 (GAS 경고바 숨김)
-    // embed: false 또는 생략 → 새 탭에서 열기
-    const LINKS = [
-      { 
-        id: 1, 
-        name: 'Preman ASR', 
-        url: 'https://script.google.com/macros/s/AKfycbzsGJg8T0YkcBui86nRrqJ3RCO5GlsM4FqtvBw6_R5VC21Aa96360e2X70Np4qE-aWXKw/exec', 
-        desc: '다국어 전사사 프로그램', 
-        icon: 'green',
-        embed: true  // ★ GAS 앱은 embed: true
-      },
-      { 
-        id: 2, 
-        name: 'Google', 
-        url: 'https://google.com', 
-        desc: '검색 엔진', 
-        icon: 'blue',
-        embed: false  // 새 탭
-      },
-    ];
-
-    // ===== 초기화 =====
-    function init() {
-      renderLinks();
-    }
-
-    // ===== 링크 렌더링 =====
-    function renderLinks() {
-      const grid = document.getElementById('linkGrid');
-      
-      if (LINKS.length === 0) {
-        grid.innerHTML = `
-          <div class="empty-state" style="grid-column: 1 / -1;">
-            <div class="empty-icon">🔗</div>
-            <div>등록된 링크가 없습니다</div>
-          </div>
-        `;
-        return;
-      }
-
-      grid.innerHTML = LINKS.map(link => {
-        const isEmbed = link.embed === true;
-        
-        if (isEmbed) {
-          // iframe으로 열기
-          return `
-            <a href="#" onclick="openAppViewer('${escapeAttr(link.url)}', '${escapeAttr(link.name)}'); return false;" class="link-card">
-              <div class="link-card-header">
-                <div class="link-icon ${link.icon || 'blue'}">${getIconEmoji(link.icon)}</div>
-                <div class="link-info">
-                  <div class="link-name">${escapeHtml(link.name)}</div>
-                  ${link.desc ? `<div class="link-desc">${escapeHtml(link.desc)}</div>` : ''}
+        <!-- 콘텐츠 -->
+        <main class="content">
+            <!-- 배너 -->
+            <div class="banner" id="banner">
+                <div class="banner-overlay"></div>
+                <div class="banner-content">
+                    <div class="banner-badge" id="bannerBadge">FEATURED</div>
+                    <h1 class="banner-title" id="bannerTitle">앱 이름</h1>
+                    <p class="banner-desc" id="bannerDesc">앱 설명</p>
                 </div>
-              </div>
-              <div class="link-footer">
-                <div class="link-url">${escapeHtml(shortenUrl(link.url))}</div>
-                <div class="link-badge embed">내부 실행</div>
-              </div>
-            </a>
-          `;
-        } else {
-          // 새 탭으로 열기
-          return `
-            <a href="${escapeAttr(link.url)}" target="_blank" rel="noopener noreferrer" class="link-card">
-              <div class="link-card-header">
-                <div class="link-icon ${link.icon || 'blue'}">${getIconEmoji(link.icon)}</div>
-                <div class="link-info">
-                  <div class="link-name">${escapeHtml(link.name)}</div>
-                  ${link.desc ? `<div class="link-desc">${escapeHtml(link.desc)}</div>` : ''}
+            </div>
+
+            <!-- 상세 영역 -->
+            <div class="detail-area">
+                <!-- 액션 버튼 -->
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="btnLaunch" onclick="launchApp()">
+                        ▶ 실행하기
+                    </button>
+                    <button class="btn btn-secondary" id="btnGuide" onclick="openAppGuide()">
+                        📖 사용 가이드
+                    </button>
                 </div>
-              </div>
-              <div class="link-footer">
-                <div class="link-url">${escapeHtml(shortenUrl(link.url))}</div>
-                <div class="link-badge">새 탭 ↗</div>
-              </div>
-            </a>
-          `;
+
+                <!-- 정보 카드 -->
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-card-label">버전</div>
+                        <div class="info-card-value" id="infoVersion">1.0.0</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-label">제작</div>
+                        <div class="info-card-value" id="infoAuthor">Premandata</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-label">카테고리</div>
+                        <div class="info-card-value" id="infoCategory">도구</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-label">최근 업데이트</div>
+                        <div class="info-card-value" id="infoUpdated">2025.01.15</div>
+                    </div>
+                </div>
+
+                <!-- 새 소식 -->
+                <div class="news-section">
+                    <div class="news-header">
+                        💡 새 소식
+                    </div>
+                    <div class="news-list" id="newsList"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+        <div>© 2025 Premandata. All rights reserved.</div>
+        <div class="footer-links">
+            <a href="#" class="footer-link">이용약관</a>
+            <a href="#" class="footer-link">개인정보처리방침</a>
+            <a href="mailto:contact@example.com" class="footer-link">문의하기</a>
+        </div>
+    </footer>
+
+    <!-- 앱 뷰어 -->
+    <div class="app-viewer-overlay" id="appViewer">
+        <div class="app-viewer-header">
+            <div class="app-viewer-title">
+                <span id="viewerIcon">🟢</span>
+                <span id="viewerTitle">앱 이름</span>
+            </div>
+            <button class="btn-close" onclick="closeAppViewer()">✕ 닫기</button>
+        </div>
+        <div class="iframe-container">
+            <div class="iframe-loading" id="iframeLoading">
+                <div class="spinner"></div>
+                <div>로딩 중...</div>
+            </div>
+            <iframe id="contentFrame" class="crop-iframe" onload="hideLoading()"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // ===== 앱 데이터 =====
+        const APPS = [
+            {
+                id: 'asr',
+                name: 'Prean ASR',
+                desc: '다국어 전사 프로그램',
+                url: 'https://script.google.com/macros/s/AKfycbzsGJg8T0YkcBui86nRrqJ3RCO5GlsM4FqtvBw6_R5VC21Aa96360e2X70Np4qE-aWXKw/exec',
+                icon: '🎙️',
+                iconBg: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
+                bannerColor: '#10b981',
+                embed: true,
+                version: 'beta 1.0',
+                author: 'Premandata',
+                category: '음성 인식',
+                updated: '2025.01.15',
+                guideUrl: 'https://notion.so/guide',
+                badge: 'FEATURED'
+            },
+            {
+                id: 'editor',
+                name: 'Preman Edit',
+                desc: '온라인 음성 편집',
+                url: 'https://script.google.com/example',
+                icon: '📝',
+                iconBg: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)',
+                bannerColor: '#ec4899',
+                embed: true,
+                version: '1.5.0',
+                author: 'Premandata',
+                category: 'QC',
+                updated: '2025.01.10',
+                guideUrl: 'https://notion.so/docs-guide',
+                badge: 'NEW'
+            },
+            {
+                id: 'QC',
+                name: 'Preman AQC',
+                desc: '스크립트 QC',
+                url: 'https://script.google.com/analytics',
+                icon: '📊',
+                iconBg: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
+                bannerColor: '#3b82f6',
+                embed: true,
+                version: '1.2.0',
+                author: 'Premandata',
+                category: 'QC',
+                updated: '2025.01.08',
+                guideUrl: null,
+                badge: 'BETA'
+            },
+            {
+                id: 'prompt',
+                name: 'Preman Teleprompt',
+                desc: '스크립트 문장 검증',
+                url: 'https://script.google.com/converter',
+                icon: '🔄',
+                iconBg: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+                bannerColor: '#10b981',
+                embed: true,
+                version: '1.0.0',
+                author: 'Premandata',
+                category: 'QC',
+                updated: '2025.01.05',
+                guideUrl: null,
+                badge: ''
+            },
+        ];
+
+        // ===== 새 소식 데이터 =====
+        const NEWS = [
+            { date: '2025.01.15', tag: 'update', title: 'ASR 엔진 v2.1.0 업데이트' },
+            { date: '2025.01.10', tag: 'notice', title: '새로운 사용자 가이드 추가' },
+            { date: '2025.01.08', tag: 'update', title: 'Analytics 베타 출시' },
+            { date: '2025.01.05', tag: 'update', title: '런처 UI 개선 및 다크모드 추가' },
+            { date: '2024.12.28', tag: 'notice', title: '연말 서비스 점검 안내' },
+        ];
+
+        // ===== 상태 =====
+        let selectedApp = APPS[0];
+
+        // ===== 테마 관리 =====
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('launcher-theme', newTheme);
         }
-      }).join('');
-    }
 
-    // ===== 앱 뷰어 (iframe) =====
-    function openAppViewer(url, title) {
-      const viewer = document.getElementById('appViewer');
-      const frame = document.getElementById('contentFrame');
-      const titleEl = document.getElementById('appViewerTitle');
-      const loading = document.getElementById('iframeLoading');
-
-      titleEl.textContent = title;
-      loading.style.display = 'block';
-      frame.src = url;
-      viewer.classList.add('show');
-      
-      // 뒤로가기 방지
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeAppViewer() {
-      const viewer = document.getElementById('appViewer');
-      const frame = document.getElementById('contentFrame');
-      
-      viewer.classList.remove('show');
-      frame.src = '';
-      document.body.style.overflow = '';
-    }
-    
-    function hideLoading() {
-      document.getElementById('iframeLoading').style.display = 'none';
-    }
-
-    // ESC 키로 닫기
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeAppViewer();
-      }
-    });
-
-    // ===== 아이콘 =====
-    function getIconEmoji(iconType) {
-      const icons = {
-        blue: '🔵',
-        green: '🟢',
-        purple: '🟣',
-        orange: '🟠',
-        gray: '⚪',
-        red: '🔴',
-        cyan: '🔵'
-      };
-      return icons[iconType] || '🔗';
-    }
-
-    // ===== 유틸리티 =====
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-    
-    function escapeAttr(text) {
-      return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    }
-
-    function shortenUrl(url) {
-      try {
-        const u = new URL(url);
-        if (u.hostname === 'script.google.com') {
-          return 'Google Apps Script';
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('launcher-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
         }
-        return u.hostname.replace('www.', '');
-      } catch {
-        return url;
-      }
-    }
 
-    // 초기화 실행
-    init();
-  </script>
+        // ===== 초기화 =====
+        function init() {
+            loadTheme();
+            renderAppList();
+            renderNews();
+            selectApp(APPS[0].id);
+        }
+
+        // ===== 앱 리스트 렌더링 =====
+        function renderAppList() {
+            const list = document.getElementById('appList');
+            list.innerHTML = APPS.map(app => `
+            <div class="app-item ${app.id === selectedApp?.id ? 'active' : ''}"
+                 onclick="selectApp('${app.id}')" data-id="${app.id}">
+              <div class="app-item-icon" style="background: ${app.iconBg}">
+                ${app.icon}
+              </div>
+              <div class="app-item-info">
+                <div class="app-item-name">${app.name}</div>
+                ${app.embed ? '<div class="app-item-status"><span class="status-dot"></span>사용 가능</div>' : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // ===== 앱 선택 =====
+        function selectApp(id) {
+            selectedApp = APPS.find(a => a.id === id);
+            if (!selectedApp) return;
+
+            // 리스트 active 상태 업데이트
+            document.querySelectorAll('.app-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.id === id);
+            });
+
+            // 배너 업데이트
+            const banner = document.getElementById('banner');
+            banner.style.background = `linear-gradient(135deg, ${selectedApp.bannerColor} 0%, ${adjustColor(selectedApp.bannerColor, -40)} 100%)`;
+            document.getElementById('bannerBadge').textContent = selectedApp.badge || 'APP';
+            document.getElementById('bannerBadge').style.display = selectedApp.badge ? 'inline-block' : 'none';
+            document.getElementById('bannerTitle').textContent = selectedApp.name;
+            document.getElementById('bannerDesc').textContent = selectedApp.desc;
+
+            // 정보 카드 업데이트
+            document.getElementById('infoVersion').textContent = selectedApp.version;
+            document.getElementById('infoAuthor').textContent = selectedApp.author;
+            document.getElementById('infoCategory').textContent = selectedApp.category;
+            document.getElementById('infoUpdated').textContent = selectedApp.updated;
+
+            // 가이드 버튼 표시/숨김
+            document.getElementById('btnGuide').style.display = selectedApp.guideUrl ? 'flex' : 'none';
+        }
+
+        // ===== 새 소식 렌더링 =====
+        function renderNews() {
+            const list = document.getElementById('newsList');
+            list.innerHTML = NEWS.map(news => `
+            <div class="news-item">
+              <div class="news-item-date">${news.date}</div>
+              <div class="news-item-title">
+                <span class="news-item-tag ${news.tag}">${news.tag === 'update' ? '업데이트' : '공지'}</span>
+                ${news.title}
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // ===== 앱 실행 =====
+        function launchApp() {
+            if (!selectedApp) return;
+
+            if (selectedApp.embed) {
+                openAppViewer(selectedApp.url, selectedApp.name, selectedApp.icon);
+            } else {
+                window.open(selectedApp.url, '_blank');
+            }
+        }
+
+        // ===== 가이드 열기 =====
+        function openAppGuide() {
+            if (selectedApp?.guideUrl) {
+                window.open(selectedApp.guideUrl, '_blank');
+            }
+        }
+
+        function openGuide() {
+            alert('도움말 페이지 준비 중입니다.');
+        }
+
+        // ===== 앱 뷰어 =====
+        function openAppViewer(url, title, icon) {
+            const viewer = document.getElementById('appViewer');
+            const frame = document.getElementById('contentFrame');
+            const loading = document.getElementById('iframeLoading');
+
+            document.getElementById('viewerTitle').textContent = title;
+            document.getElementById('viewerIcon').textContent = icon;
+            loading.style.display = 'block';
+            frame.src = url;
+            viewer.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAppViewer() {
+            const viewer = document.getElementById('appViewer');
+            const frame = document.getElementById('contentFrame');
+
+            viewer.classList.remove('show');
+            frame.src = '';
+            document.body.style.overflow = '';
+        }
+
+        function hideLoading() {
+            document.getElementById('iframeLoading').style.display = 'none';
+        }
+
+        // ESC로 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAppViewer();
+        });
+
+        // ===== 유틸리티 =====
+        function adjustColor(hex, amount) {
+            const num = parseInt(hex.replace('#', ''), 16);
+            const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+            const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+            return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+        }
+
+        // 초기화 실행
+        init();
+    </script>
 </body>
 </html>
