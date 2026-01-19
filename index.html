@@ -1,1006 +1,1683 @@
 <!DOCTYPE html>
 <html lang="ko" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preman Launcher</title>
-    <style>
-        /* ===== 테마 변수 ===== */
-        :root {
-            --transition-theme: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
-        }
-
-        /* 다크 테마 */
-        [data-theme="dark"] {
-            --bg: #1a1a2e;
-            --bg-light: #16213e;
-            --sidebar: #0f0f1a;
-            --card: #1f1f3a;
-            --text: #ffffff;
-            --text-muted: #8888aa;
-            --accent: #6366f1;
-            --accent-hover: #818cf8;
-            --success: #10b981;
-            --line: #2a2a4a;
-            --scrollbar-track: #1a1a2e;
-            --scrollbar-thumb: #3a3a5a;
-            --scrollbar-thumb-hover: #4a4a6a;
-        }
-
-        /* 라이트 테마 - 원본 스타일 기반 */
-        [data-theme="light"] {
-            --bg: #f6f6f6;
-            --bg-light: #fafafa;
-            --sidebar: #ffffff;
-            --card: #ffffff;
-            --text: #111111;
-            --text-muted: #777777;
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
-            --success: #10b981;
-            --line: #e9e9e9;
-            --scrollbar-track: #f0f0f0;
-            --scrollbar-thumb: #d1d1d1;
-            --scrollbar-thumb-hover: #b1b1b1;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* ===== 커스텀 스크롤바 ===== */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--scrollbar-track);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--scrollbar-thumb);
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-            ::-webkit-scrollbar-thumb:hover {
-                background: var(--scrollbar-thumb-hover);
-            }
-
-        ::-webkit-scrollbar-corner {
-            background: var(--scrollbar-track);
-        }
-
-        /* Firefox 스크롤바 */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-        }
-
-        body {
-            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transition: var(--transition-theme);
-        }
-
-        /* ===== 헤더 ===== */
-        .header {
-            background: var(--sidebar);
-            border-bottom: 1px solid var(--line);
-            padding: 0 20px;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-            transition: var(--transition-theme);
-        }
-
-        .brand {
-            font-weight: 800;
-            font-size: 16px;
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .brand-icon {
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .header-link {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 12px;
-            transition: color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-            .header-link:hover {
-                color: var(--text);
-            }
-
-        /* 테마 토글 */
-        .theme-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .theme-toggle-label {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .toggle-switch {
-            width: 44px;
-            height: 24px;
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            position: relative;
-            transition: all 0.3s;
-        }
-
-            .toggle-switch::before {
-                content: '🌙';
-                position: absolute;
-                left: 3px;
-                top: 50%;
-                transform: translateY(-50%);
-                width: 18px;
-                height: 18px;
-                background: var(--accent);
-                border-radius: 50%;
-                transition: all 0.3s;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 10px;
-            }
-
-        [data-theme="light"] .toggle-switch::before {
-            left: calc(100% - 21px);
-            content: '☀️';
-        }
-
-        /* ===== 메인 레이아웃 ===== */
-        .main-layout {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-
-        /* ===== 사이드바 ===== */
-        .sidebar {
-            width: 220px;
-            background: var(--sidebar);
-            border-right: 1px solid var(--line);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            transition: var(--transition-theme);
-        }
-
-        .sidebar-section {
-            padding: 16px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .sidebar-title {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        .app-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .app-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s;
-            border: 1px solid transparent;
-        }
-
-            .app-item:hover {
-                background: var(--bg);
-            }
-
-            .app-item.active {
-                background: var(--bg);
-                border-color: var(--line);
-            }
-
-        [data-theme="light"] .app-item.active {
-            background: var(--bg);
-            border-color: var(--line);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .app-item-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .app-item-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .app-item-name {
-            font-size: 13px;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .app-item-status {
-            font-size: 10px;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 2px;
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--success);
-            border-radius: 50%;
-        }
-
-        /* ===== 콘텐츠 영역 ===== */
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background: var(--bg);
-            transition: var(--transition-theme);
-        }
-
-        /* 배너 - 가독성 개선 */
-        .banner {
-            height: 220px;
-            background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
-            position: relative;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-
-        /* 배너 하단 그라데이션 오버레이 */
-        .banner-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 140px;
-            background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
-            transition: var(--transition-theme);
-        }
-
-        .banner-content {
-            position: absolute;
-            bottom: 24px;
-            left: 32px;
-            right: 32px;
-        }
-
-        .banner-badge {
-            display: inline-block;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(4px);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #fff;
-            letter-spacing: 0.5px;
-        }
-
-        .banner-title {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 6px;
-            color: #fff;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .banner-desc {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.95);
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-            font-weight: 500;
-        }
-
-        /* 상세 영역 */
-        .detail-area {
-            flex: 1;
-            padding: 24px 32px;
-            overflow-y: auto;
-        }
-
-        /* 액션 버튼들 */
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 28px;
-        }
-
-        .btn {
-            height: 46px;
-            padding: 0 28px;
-            border-radius: 10px;
-            border: none;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            min-width: 160px;
-            justify-content: center;
-        }
-
-            .btn-primary:hover {
-                background: var(--accent-hover);
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-            }
-
-        .btn-secondary {
-            background: var(--card);
-            color: var(--text);
-            border: 1px solid var(--line);
-        }
-
-            .btn-secondary:hover {
-                background: var(--bg-light);
-                border-color: var(--text-muted);
-            }
-
-        /* 정보 그리드 */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px;
-            margin-bottom: 28px;
-        }
-
-        .info-card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 16px 18px;
-            border: 1px solid var(--line);
-            transition: var(--transition-theme);
-        }
-
-        .info-card-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
-
-        .info-card-value {
-            font-size: 15px;
-            font-weight: 700;
-        }
-
-        /* 새 소식 */
-        .news-section {
-            background: var(--card);
-            border-radius: 12px;
-            border: 1px solid var(--line);
-            overflow: hidden;
-            transition: var(--transition-theme);
-        }
-
-        .news-header {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--line);
-            font-size: 14px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .news-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .news-item {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--line);
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-            .news-item:last-child {
-                border-bottom: none;
-            }
-
-            .news-item:hover {
-                background: var(--bg);
-            }
-
-        .news-item-date {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-        }
-
-        .news-item-title {
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .news-item-tag {
-            display: inline-block;
-            font-size: 10px;
-            padding: 3px 8px;
-            border-radius: 4px;
-            background: var(--accent);
-            color: white;
-            margin-right: 8px;
-            font-weight: 600;
-        }
-
-            .news-item-tag.update {
-                background: #10b981;
-            }
-
-            .news-item-tag.notice {
-                background: #f59e0b;
-            }
-
-        /* ===== 앱 뷰어 (iframe) ===== */
-        .app-viewer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--bg);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-            .app-viewer-overlay.show {
-                visibility: visible;
-                opacity: 1;
-            }
-
-        .app-viewer-header {
-            height: 48px;
-            background: var(--sidebar);
-            border-bottom: 1px solid var(--line);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            flex-shrink: 0;
-            transition: var(--transition-theme);
-        }
-
-        .app-viewer-title {
-            font-weight: 700;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-close {
-            height: 32px;
-            padding: 0 14px;
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            color: var(--text);
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-
-            .btn-close:hover {
-                background: var(--bg-light);
-            }
-
-        .iframe-container {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-            background: var(--bg);
-        }
-
-        .crop-iframe {
-            width: 100%;
-            border: none;
-            position: absolute;
-            top: -50px;
-            height: calc(100% + 50px);
-            background: #fff;
-        }
-
-        .iframe-loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: var(--text-muted);
-        }
-
-        .spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid var(--line);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 12px;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* ===== 푸터 ===== */
-        .footer {
-            background: var(--sidebar);
-            border-top: 1px solid var(--line);
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 11px;
-            color: var(--text-muted);
-            flex-shrink: 0;
-            transition: var(--transition-theme);
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-
-        .footer-link {
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-            .footer-link:hover {
-                color: var(--text);
-            }
-
-        /* ===== 반응형 ===== */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 180px;
-            }
-
-            .banner {
-                height: 180px;
-            }
-
-            .banner-title {
-                font-size: 24px;
-            }
-
-            .detail-area {
-                padding: 16px 20px;
-            }
-
-            .info-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preman Launcher</title>
+  <style>
+    /* ===== 테마 변수 ===== */
+    :root {
+      --transition-theme: background 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    [data-theme="dark"] {
+      --bg: #1a1a2e;
+      --bg-light: #16213e;
+      --sidebar: #0f0f1a;
+      --card: #1f1f3a;
+      --text: #ffffff;
+      --text-muted: #8888aa;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --line: #2a2a4a;
+      --scrollbar-track: #1a1a2e;
+      --scrollbar-thumb: #3a3a5a;
+      --scrollbar-thumb-hover: #4a4a6a;
+      --overlay: rgba(0, 0, 0, 0.7);
+    }
+
+    [data-theme="light"] {
+      --bg: #f6f6f6;
+      --bg-light: #fafafa;
+      --sidebar: #ffffff;
+      --card: #ffffff;
+      --text: #111111;
+      --text-muted: #777777;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --line: #e9e9e9;
+      --scrollbar-track: #f0f0f0;
+      --scrollbar-thumb: #d1d1d1;
+      --scrollbar-thumb-hover: #b1b1b1;
+      --overlay: rgba(0, 0, 0, 0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+    * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track); }
+    
+    body {
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: var(--transition-theme);
+    }
+
+    .hidden { display: none !important; }
+
+    /* ===== 버튼 ===== */
+    .btn {
+      height: 44px;
+      padding: 0 24px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+
+    .btn-sm {
+      height: 36px;
+      padding: 0 14px;
+      font-size: 13px;
+    }
+
+    .btn-lg {
+      height: 52px;
+      padding: 0 32px;
+      font-size: 16px;
+    }
+
+    /* ===== 헤더 ===== */
+    .header {
+      background: var(--sidebar);
+      border-bottom: 1px solid var(--line);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-link {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      background: var(--card);
+    }
+
+    .nav-link.active {
+      color: var(--accent);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      background: var(--card);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: white;
+    }
+
+    .user-name {
+      font-weight: 600;
+    }
+
+    .user-badge {
+      background: var(--warning);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg);
+    }
+
+    /* ===== 메인 레이아웃 ===== */
+    .main-layout {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ===== 사이드바 ===== */
+    .sidebar {
+      width: 240px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-section {
+      padding: 20px 16px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      padding: 0 8px;
+    }
+
+    .app-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .app-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+
+    .app-item:hover {
+      background: var(--card);
+    }
+
+    .app-item.active {
+      background: var(--card);
+      border-color: var(--accent);
+    }
+
+    .app-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .app-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .app-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .app-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .app-tag.featured { background: var(--success); color: white; }
+    .app-tag.new { background: var(--accent); color: white; }
+    .app-tag.beta { background: var(--warning); color: white; }
+
+    /* Admin 메뉴 구분선 */
+    .sidebar-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 16px 8px;
+    }
+
+    /* ===== 콘텐츠 영역 ===== */
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+    }
+
+    /* ===== 앱 상세 화면 ===== */
+    .app-header {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .app-header-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      flex-shrink: 0;
+    }
+
+    .app-header-info {
+      flex: 1;
+    }
+
+    .app-header-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-header-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .app-meta {
+      display: flex;
+      gap: 24px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .app-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 실행 버튼 영역 */
+    .launch-section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .launch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .launch-info {
+      flex: 1;
+    }
+
+    .launch-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .launch-hint {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .launch-hint.logged-in {
+      color: var(--success);
+    }
+
+    /* 기능 소개 */
+    .features-section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .feature-icon {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+
+    .feature-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* 사용 가이드 */
+    .guide-section {
+      margin-bottom: 32px;
+    }
+
+    .guide-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .guide-step {
+      display: flex;
+      gap: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* 공지사항 탭 */
+    .notice-section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .notice-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .notice-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .notice-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .notice-item:last-child {
+      border-bottom: none;
+    }
+
+    .notice-item:hover {
+      background: var(--bg);
+    }
+
+    .notice-date {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .notice-title {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .notice-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    .notice-tag.update { background: var(--success); color: white; }
+    .notice-tag.notice { background: var(--warning); color: white; }
+    .notice-tag.event { background: var(--accent); color: white; }
+
+    /* ===== Admin 대시보드 ===== */
+    .admin-header {
+      margin-bottom: 24px;
+    }
+
+    .admin-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .admin-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .table-section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .table-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .table-scroll {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 12px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+      color: var(--text-muted);
+      position: sticky;
+      top: 0;
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .data-table tr:hover td {
+      background: var(--bg);
+    }
+
+    .usage-bar {
+      width: 100px;
+      height: 8px;
+      background: var(--line);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .usage-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .usage-fill.ok { background: var(--success); }
+    .usage-fill.warn { background: var(--warning); }
+    .usage-fill.danger { background: var(--danger); }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-badge.active { background: rgba(16,185,129,0.15); color: var(--success); }
+    .status-badge.inactive { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+    /* ===== 모달 ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--overlay);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+
+    .modal-overlay.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 400px;
+      transform: translateY(20px);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.show .modal {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 16px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .modal-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .modal-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .modal-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ===== 앱 뷰어 ===== */
+    .app-viewer-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .app-viewer-overlay.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .app-viewer-header {
+      height: 52px;
+      background: var(--sidebar);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+    }
+
+    .app-viewer-title {
+      font-weight: 700;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .iframe-container {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .crop-iframe {
+      width: 100%;
+      border: none;
+      position: absolute;
+      top: -50px;
+      height: calc(100% + 50px);
+      background: #fff;
+    }
+
+    .iframe-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--line);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== 푸터 ===== */
+    .footer {
+      background: var(--sidebar);
+      border-top: 1px solid var(--line);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+      color: var(--text);
+    }
+
+    /* ===== 반응형 ===== */
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; }
+      .content-scroll { padding: 20px; }
+      .app-header { flex-direction: column; gap: 16px; }
+      .app-header-icon { width: 60px; height: 60px; font-size: 30px; }
+      .app-header-title { font-size: 22px; }
+      .launch-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
 </head>
 <body>
 
-    <!-- 헤더 -->
-    <header class="header">
-        <div class="brand">
-            <div class="brand-icon">⚡</div>
-            Preman Launcher
-        </div>
-        <div class="header-actions">
-            <a href="#" class="header-link" onclick="openGuide(); return false;">📖 도움말</a>
-            <div class="theme-toggle" onclick="toggleTheme()">
-                <span class="theme-toggle-label">테마</span>
-                <div class="toggle-switch"></div>
-            </div>
-        </div>
-    </header>
-
-    <!-- 메인 레이아웃 -->
-    <div class="main-layout">
-
-        <!-- 사이드바 -->
-        <aside class="sidebar">
-            <div class="sidebar-section">
-                <div class="sidebar-title">애플리케이션</div>
-                <div class="app-list" id="appList"></div>
-            </div>
-        </aside>
-
-        <!-- 콘텐츠 -->
-        <main class="content">
-            <!-- 배너 -->
-            <div class="banner" id="banner">
-                <div class="banner-overlay"></div>
-                <div class="banner-content">
-                    <div class="banner-badge" id="bannerBadge">FEATURED</div>
-                    <h1 class="banner-title" id="bannerTitle">앱 이름</h1>
-                    <p class="banner-desc" id="bannerDesc">앱 설명</p>
-                </div>
-            </div>
-
-            <!-- 상세 영역 -->
-            <div class="detail-area">
-                <!-- 액션 버튼 -->
-                <div class="action-buttons">
-                    <button class="btn btn-primary" id="btnLaunch" onclick="launchApp()">
-                        ▶ 실행하기
-                    </button>
-                    <button class="btn btn-secondary" id="btnGuide" onclick="openAppGuide()">
-                        📖 사용 가이드
-                    </button>
-                </div>
-
-                <!-- 정보 카드 -->
-                <div class="info-grid">
-                    <div class="info-card">
-                        <div class="info-card-label">버전</div>
-                        <div class="info-card-value" id="infoVersion">1.0.0</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-card-label">제작</div>
-                        <div class="info-card-value" id="infoAuthor">Premandata</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-card-label">카테고리</div>
-                        <div class="info-card-value" id="infoCategory">도구</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-card-label">최근 업데이트</div>
-                        <div class="info-card-value" id="infoUpdated">2025.01.15</div>
-                    </div>
-                </div>
-
-                <!-- 새 소식 -->
-                <div class="news-section">
-                    <div class="news-header">
-                        💡 새 소식
-                    </div>
-                    <div class="news-list" id="newsList"></div>
-                </div>
-            </div>
-        </main>
+  <!-- ===== 헤더 ===== -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      Preman Launcher
     </div>
-
-    <!-- 푸터 -->
-    <footer class="footer">
-        <div>© 2025 Premandata. All rights reserved.</div>
-        <div class="footer-links">
-            <a href="#" class="footer-link">이용약관</a>
-            <a href="#" class="footer-link">개인정보처리방침</a>
-            <a href="mailto:contact@example.com" class="footer-link">문의하기</a>
-        </div>
-    </footer>
-
-    <!-- 앱 뷰어 -->
-    <div class="app-viewer-overlay" id="appViewer">
-        <div class="app-viewer-header">
-            <div class="app-viewer-title">
-                <span id="viewerIcon">🟢</span>
-                <span id="viewerTitle">앱 이름</span>
-            </div>
-            <button class="btn-close" onclick="closeAppViewer()">✕ 닫기</button>
-        </div>
-        <div class="iframe-container">
-            <div class="iframe-loading" id="iframeLoading">
-                <div class="spinner"></div>
-                <div>로딩 중...</div>
-            </div>
-            <iframe id="contentFrame" class="crop-iframe" onload="hideLoading()"></iframe>
-        </div>
+    
+    <nav class="header-nav">
+      <span class="nav-link active" onclick="showTab('apps')">애플리케이션</span>
+      <span class="nav-link" onclick="showTab('notice')">공지사항</span>
+    </nav>
+    
+    <div class="header-right">
+      <!-- 비로그인 상태 -->
+      <button class="btn btn-primary btn-sm" id="headerLoginBtn" onclick="openLoginModal()">
+        로그인
+      </button>
+      
+      <!-- 로그인 상태 -->
+      <div class="user-info hidden" id="userInfoArea">
+        <div class="user-avatar" id="userAvatar">홍</div>
+        <span class="user-name" id="userName">사용자</span>
+        <span class="user-badge hidden" id="adminBadge">ADMIN</span>
+      </div>
+      <button class="btn btn-secondary btn-sm hidden" id="logoutBtn" onclick="handleLogout()">
+        로그아웃
+      </button>
+      
+      <div class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</div>
     </div>
+  </header>
 
-    <script>
-        // ===== 앱 데이터 =====
-        const APPS = [
-            {
-                id: 'asr',
-                name: 'Prean ASR',
-                desc: '다국어 전사 프로그램',
-                url: 'https://script.google.com/macros/s/AKfycbzsGJg8T0YkcBui86nRrqJ3RCO5GlsM4FqtvBw6_R5VC21Aa96360e2X70Np4qE-aWXKw/exec',
-                icon: '🎙️',
-                iconBg: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
-                bannerColor: '#10b981',
-                embed: true,
-                version: 'beta 1.0',
-                author: 'Premandata',
-                category: '음성 인식',
-                updated: '2025.01.15',
-                guideUrl: 'https://notion.so/guide',
-                badge: 'FEATURED'
-            },
-            {
-                id: 'editor',
-                name: 'Preman Edit',
-                desc: '온라인 음성 편집',
-                url: 'https://script.google.com/example',
-                icon: '📝',
-                iconBg: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)',
-                bannerColor: '#ec4899',
-                embed: true,
-                version: '1.5.0',
-                author: 'Premandata',
-                category: 'QC',
-                updated: '2025.01.10',
-                guideUrl: 'https://notion.so/docs-guide',
-                badge: 'NEW'
-            },
-            {
-                id: 'QC',
-                name: 'Preman AQC',
-                desc: '스크립트 QC',
-                url: 'https://script.google.com/analytics',
-                icon: '📊',
-                iconBg: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
-                bannerColor: '#3b82f6',
-                embed: true,
-                version: '1.2.0',
-                author: 'Premandata',
-                category: 'QC',
-                updated: '2025.01.08',
-                guideUrl: null,
-                badge: 'BETA'
-            },
-            {
-                id: 'prompt',
-                name: 'Preman Teleprompt',
-                desc: '스크립트 문장 검증',
-                url: 'https://script.google.com/converter',
-                icon: '🔄',
-                iconBg: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
-                bannerColor: '#10b981',
-                embed: true,
-                version: '1.0.0',
-                author: 'Premandata',
-                category: 'QC',
-                updated: '2025.01.05',
-                guideUrl: null,
-                badge: ''
-            },
-        ];
+  <!-- ===== 메인 레이아웃 ===== -->
+  <div class="main-layout">
+    
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">애플리케이션</div>
+        <div class="app-list" id="appList"></div>
+        
+        <!-- Admin 메뉴 (로그인 후 ADMIN만) -->
+        <div class="hidden" id="adminSection">
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-title">관리자</div>
+          <div class="app-list" id="adminMenu"></div>
+        </div>
+      </div>
+    </aside>
 
-        // ===== 새 소식 데이터 =====
-        const NEWS = [
-            { date: '2025.01.15', tag: 'update', title: 'ASR 엔진 v2.1.0 업데이트' },
-            { date: '2025.01.10', tag: 'notice', title: '새로운 사용자 가이드 추가' },
-            { date: '2025.01.08', tag: 'update', title: 'Analytics 베타 출시' },
-            { date: '2025.01.05', tag: 'update', title: '런처 UI 개선 및 다크모드 추가' },
-            { date: '2024.12.28', tag: 'notice', title: '연말 서비스 점검 안내' },
-        ];
+    <!-- 콘텐츠 -->
+    <main class="content">
+      <div class="content-scroll" id="contentArea">
+        <!-- 동적 콘텐츠 -->
+      </div>
+    </main>
+  </div>
 
-        // ===== 상태 =====
-        let selectedApp = APPS[0];
+  <!-- ===== 푸터 ===== -->
+  <footer class="footer">
+    <div>© 2025 Premandata. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#" class="footer-link">이용약관</a>
+      <a href="#" class="footer-link">개인정보처리방침</a>
+      <a href="mailto:contact@premandata.com" class="footer-link">문의하기</a>
+    </div>
+  </footer>
 
-        // ===== 테마 관리 =====
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  <!-- ===== 로그인 모달 ===== -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-icon">⚡</div>
+        <h2 class="modal-title">로그인</h2>
+        <p class="modal-subtitle">앱을 실행하려면 로그인이 필요합니다</p>
+      </div>
+      
+      <div class="modal-error hidden" id="loginError"></div>
+      
+      <div class="form-group">
+        <label class="form-label">아이디</label>
+        <input type="text" class="form-input" id="loginId" placeholder="아이디를 입력하세요">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">비밀번호</label>
+        <input type="password" class="form-input" id="loginPw" placeholder="비밀번호를 입력하세요">
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="loginSubmitBtn" onclick="handleLogin()">로그인</button>
+        <button class="btn btn-secondary" onclick="closeLoginModal()">취소</button>
+      </div>
+      
+      <p class="modal-footer">
+        계정이 없으신가요? 관리자에게 문의해주세요.
+      </p>
+    </div>
+  </div>
 
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('launcher-theme', newTheme);
-        }
+  <!-- ===== 앱 뷰어 ===== -->
+  <div class="app-viewer-overlay" id="appViewer">
+    <div class="app-viewer-header">
+      <div class="app-viewer-title">
+        <span id="viewerIcon">🎙️</span>
+        <span id="viewerTitle">앱 이름</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="closeAppViewer()">✕ 닫기 (ESC)</button>
+    </div>
+    <div class="iframe-container">
+      <div class="iframe-loading" id="iframeLoading">
+        <div class="spinner"></div>
+        <div>앱을 불러오는 중...</div>
+      </div>
+      <iframe id="contentFrame" class="crop-iframe" onload="hideLoading()"></iframe>
+    </div>
+  </div>
 
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('launcher-theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        }
+  <script>
+    // =====================================================================
+    // 설정
+    // =====================================================================
+      const AUTH_API_URL = 'https://script.google.com/macros/s/AKfycbwmjjNZmsyX7YlyamQb_Wk3gTS2aw4JIXZceocJ2etGcK-CtA3jHJCH4GjXYo9cx_EU/exec';  // 배포 후 URL 입력
+    
+    // =====================================================================
+    // 앱 데이터 (공개)
+    // =====================================================================
+    const APPS = [
+      {
+        id: 'asr',
+        name: 'Prean ASR',
+        desc: '다국어 음성 전사 프로그램',
+        url: 'https://script.google.com/macros/s/YOUR_ASR_URL/exec',
+        icon: '🎙️',
+        iconBg: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
+        tag: 'featured',
+        tagLabel: 'FEATURED',
+        version: 'v1.2.0',
+        author: 'Premandata',
+        category: '음성 인식',
+        updated: '2025.01.15',
+        features: [
+          { icon: '🎯', title: '높은 정확도', desc: '최신 AI 모델을 활용한 정확한 음성 인식' },
+          { icon: '🌏', title: '다국어 지원', desc: '한국어, 영어, 일본어 등 다양한 언어 지원' },
+          { icon: '⏱️', title: '타임코드 생성', desc: '자동으로 타임코드를 생성하여 편집 효율 향상' },
+          { icon: '👥', title: '화자 분리', desc: '여러 화자를 자동으로 구분하여 표시' },
+        ],
+        guide: [
+          { title: '음성 파일 업로드', desc: 'MP3, WAV, M4A 등 다양한 형식의 음성 파일을 업로드합니다.' },
+          { title: '언어 및 옵션 설정', desc: '전사할 언어를 선택하고, 화자 분리 등 옵션을 설정합니다.' },
+          { title: '전사 시작', desc: '설정을 확인하고 전사를 시작합니다. 파일 길이에 따라 소요 시간이 달라집니다.' },
+          { title: '결과 확인 및 다운로드', desc: '전사 결과를 확인하고 CSV, PDF 등 다양한 형식으로 다운로드합니다.' },
+        ]
+      },
+      {
+        id: 'docs',
+        name: 'Premandata Docs',
+        desc: '문서 작성 및 관리 도구',
+        url: 'https://script.google.com/macros/s/YOUR_DOCS_URL/exec',
+        icon: '📝',
+        iconBg: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)',
+        tag: 'new',
+        tagLabel: 'NEW',
+        version: 'v1.5.0',
+        author: 'Premandata',
+        category: '문서',
+        updated: '2025.01.10',
+        features: [
+          { icon: '✍️', title: '실시간 편집', desc: '브라우저에서 바로 문서를 작성하고 편집' },
+          { icon: '📁', title: '자동 저장', desc: '작업 내용이 자동으로 저장되어 데이터 손실 방지' },
+          { icon: '🔗', title: '공유 기능', desc: '팀원들과 쉽게 문서를 공유하고 협업' },
+          { icon: '📤', title: '다양한 내보내기', desc: 'PDF, Word, HTML 등 다양한 형식으로 내보내기' },
+        ],
+        guide: [
+          { title: '새 문서 만들기', desc: '새 문서 버튼을 클릭하여 빈 문서를 생성합니다.' },
+          { title: '내용 작성', desc: '에디터에서 텍스트, 이미지, 표 등을 추가합니다.' },
+          { title: '저장 및 공유', desc: '문서를 저장하고 필요시 팀원들과 공유합니다.' },
+        ]
+      },
+      {
+        id: 'analytics',
+        name: 'Analytics',
+        desc: '데이터 분석 대시보드',
+        url: 'https://script.google.com/macros/s/YOUR_ANALYTICS_URL/exec',
+        icon: '📊',
+        iconBg: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
+        tag: 'beta',
+        tagLabel: 'BETA',
+        version: 'v0.9.0',
+        author: 'Premandata',
+        category: '분석',
+        updated: '2025.01.08',
+        features: [
+          { icon: '📈', title: '시각화', desc: '데이터를 차트와 그래프로 시각화' },
+          { icon: '🔍', title: '인사이트', desc: '데이터에서 의미 있는 인사이트 도출' },
+          { icon: '📋', title: '리포트', desc: '자동화된 리포트 생성 기능' },
+        ],
+        guide: [
+          { title: '데이터 연결', desc: '분석할 데이터 소스를 연결합니다.' },
+          { title: '대시보드 구성', desc: '원하는 차트와 지표를 배치합니다.' },
+          { title: '분석 및 공유', desc: '데이터를 분석하고 리포트를 공유합니다.' },
+        ]
+      },
+    ];
 
-        // ===== 초기화 =====
-        function init() {
-            loadTheme();
-            renderAppList();
-            renderNews();
-            selectApp(APPS[0].id);
-        }
+    const NEWS = [
+      { date: '2025.01.15', tag: 'update', title: 'ASR 엔진 v2.1.0 업데이트 - 일본어 인식 정확도 대폭 향상' },
+      { date: '2025.01.12', tag: 'notice', title: '서버 점검 안내 (1/20 02:00-04:00 예정)' },
+      { date: '2025.01.10', tag: 'update', title: 'Docs 앱 v1.5.0 - 실시간 협업 기능 추가' },
+      { date: '2025.01.08', tag: 'event', title: 'Analytics 베타 테스트 참여자 모집' },
+      { date: '2025.01.05', tag: 'update', title: '런처 UI 개선 및 다크모드 지원' },
+      { date: '2024.12.28', tag: 'notice', title: '연말연시 운영 안내' },
+    ];
 
-        // ===== 앱 리스트 렌더링 =====
-        function renderAppList() {
-            const list = document.getElementById('appList');
-            list.innerHTML = APPS.map(app => `
-            <div class="app-item ${app.id === selectedApp?.id ? 'active' : ''}"
-                 onclick="selectApp('${app.id}')" data-id="${app.id}">
-              <div class="app-item-icon" style="background: ${app.iconBg}">
-                ${app.icon}
-              </div>
-              <div class="app-item-info">
-                <div class="app-item-name">${app.name}</div>
-                ${app.embed ? '<div class="app-item-status"><span class="status-dot"></span>사용 가능</div>' : ''}
-              </div>
-            </div>
-          `).join('');
-        }
+    // =====================================================================
+    // 상태
+    // =====================================================================
+    let currentUser = null;
+    let authToken = null;
+    let selectedApp = APPS[0];
+    let currentTab = 'apps';
 
-        // ===== 앱 선택 =====
-        function selectApp(id) {
-            selectedApp = APPS.find(a => a.id === id);
-            if (!selectedApp) return;
+    // =====================================================================
+    // 초기화
+    // =====================================================================
+    function init() {
+      loadTheme();
+      renderSidebar();
+      checkSession();
+      selectApp(APPS[0].id);
+    }
 
-            // 리스트 active 상태 업데이트
-            document.querySelectorAll('.app-item').forEach(el => {
-                el.classList.toggle('active', el.dataset.id === id);
-            });
+    // =====================================================================
+    // 테마
+    // =====================================================================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('launcher-theme', newTheme);
+      updateThemeIcon();
+    }
 
-            // 배너 업데이트
-            const banner = document.getElementById('banner');
-            banner.style.background = `linear-gradient(135deg, ${selectedApp.bannerColor} 0%, ${adjustColor(selectedApp.bannerColor, -40)} 100%)`;
-            document.getElementById('bannerBadge').textContent = selectedApp.badge || 'APP';
-            document.getElementById('bannerBadge').style.display = selectedApp.badge ? 'inline-block' : 'none';
-            document.getElementById('bannerTitle').textContent = selectedApp.name;
-            document.getElementById('bannerDesc').textContent = selectedApp.desc;
+    function loadTheme() {
+      const saved = localStorage.getItem('launcher-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      updateThemeIcon();
+    }
 
-            // 정보 카드 업데이트
-            document.getElementById('infoVersion').textContent = selectedApp.version;
-            document.getElementById('infoAuthor').textContent = selectedApp.author;
-            document.getElementById('infoCategory').textContent = selectedApp.category;
-            document.getElementById('infoUpdated').textContent = selectedApp.updated;
+    function updateThemeIcon() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
+    }
 
-            // 가이드 버튼 표시/숨김
-            document.getElementById('btnGuide').style.display = selectedApp.guideUrl ? 'flex' : 'none';
-        }
-
-        // ===== 새 소식 렌더링 =====
-        function renderNews() {
-            const list = document.getElementById('newsList');
-            list.innerHTML = NEWS.map(news => `
-            <div class="news-item">
-              <div class="news-item-date">${news.date}</div>
-              <div class="news-item-title">
-                <span class="news-item-tag ${news.tag}">${news.tag === 'update' ? '업데이트' : '공지'}</span>
-                ${news.title}
-              </div>
-            </div>
-          `).join('');
-        }
-
-        // ===== 앱 실행 =====
-        function launchApp() {
-            if (!selectedApp) return;
-
-            if (selectedApp.embed) {
-                openAppViewer(selectedApp.url, selectedApp.name, selectedApp.icon);
-            } else {
-                window.open(selectedApp.url, '_blank');
-            }
-        }
-
-        // ===== 가이드 열기 =====
-        function openAppGuide() {
-            if (selectedApp?.guideUrl) {
-                window.open(selectedApp.guideUrl, '_blank');
-            }
-        }
-
-        function openGuide() {
-            alert('도움말 페이지 준비 중입니다.');
-        }
-
-        // ===== 앱 뷰어 =====
-        function openAppViewer(url, title, icon) {
-            const viewer = document.getElementById('appViewer');
-            const frame = document.getElementById('contentFrame');
-            const loading = document.getElementById('iframeLoading');
-
-            document.getElementById('viewerTitle').textContent = title;
-            document.getElementById('viewerIcon').textContent = icon;
-            loading.style.display = 'block';
-            frame.src = url;
-            viewer.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeAppViewer() {
-            const viewer = document.getElementById('appViewer');
-            const frame = document.getElementById('contentFrame');
-
-            viewer.classList.remove('show');
-            frame.src = '';
-            document.body.style.overflow = '';
-        }
-
-        function hideLoading() {
-            document.getElementById('iframeLoading').style.display = 'none';
-        }
-
-        // ESC로 닫기
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeAppViewer();
+    // =====================================================================
+    // API 호출
+    // =====================================================================
+    async function callAPI(action, data = {}) {
+      try {
+        const res = await fetch(AUTH_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, ...data })
         });
+        return await res.json();
+      } catch (e) {
+        console.error('API Error:', e);
+        return { ok: false, reason: 'NETWORK_ERROR' };
+      }
+    }
 
-        // ===== 유틸리티 =====
-        function adjustColor(hex, amount) {
-            const num = parseInt(hex.replace('#', ''), 16);
-            const r = Math.max(0, Math.min(255, (num >> 16) + amount));
-            const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
-            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
-            return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+    // =====================================================================
+    // 세션 체크
+    // =====================================================================
+    async function checkSession() {
+      const savedToken = localStorage.getItem('auth_token');
+      
+      if (savedToken) {
+        const result = await callAPI('verify', { token: savedToken });
+        if (result.ok) {
+          authToken = savedToken;
+          currentUser = result.user;
+          updateUIForLoggedIn();
+          return;
+        } else {
+          localStorage.removeItem('auth_token');
         }
+      }
+      
+      updateUIForLoggedOut();
+    }
 
-        // 초기화 실행
-        init();
-    </script>
+    // =====================================================================
+    // 로그인/로그아웃
+    // =====================================================================
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.add('show');
+      document.getElementById('loginId').focus();
+      document.getElementById('loginError').classList.add('hidden');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.remove('show');
+      document.getElementById('loginId').value = '';
+      document.getElementById('loginPw').value = '';
+    }
+
+    async function handleLogin() {
+      const id = document.getElementById('loginId').value.trim();
+      const pw = document.getElementById('loginPw').value;
+      const errorEl = document.getElementById('loginError');
+      const btn = document.getElementById('loginSubmitBtn');
+
+      if (!id || !pw) {
+        errorEl.textContent = '아이디와 비밀번호를 입력하세요.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '로그인 중...';
+
+      const result = await callAPI('login', { userId: id, password: pw });
+
+      btn.disabled = false;
+      btn.textContent = '로그인';
+
+      if (result.ok) {
+        authToken = result.token;
+        currentUser = result.user;
+        localStorage.setItem('auth_token', authToken);
+        closeLoginModal();
+        updateUIForLoggedIn();
+        renderAppDetail();  // 실행 버튼 상태 갱신
+      } else {
+        const msg = {
+          'NOT_FOUND': '존재하지 않는 계정입니다.',
+          'BAD_PASSWORD': '비밀번호가 일치하지 않습니다.',
+          'ACCOUNT_DISABLED': '비활성화된 계정입니다.',
+          'NETWORK_ERROR': '서버에 연결할 수 없습니다.'
+        }[result.reason] || '로그인에 실패했습니다.';
+        errorEl.textContent = msg;
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    async function handleLogout() {
+      await callAPI('logout', { token: authToken });
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem('auth_token');
+      updateUIForLoggedOut();
+      renderAppDetail();  // 실행 버튼 상태 갱신
+    }
+
+    // =====================================================================
+    // UI 업데이트
+    // =====================================================================
+    function updateUIForLoggedIn() {
+      document.getElementById('headerLoginBtn').classList.add('hidden');
+      document.getElementById('userInfoArea').classList.remove('hidden');
+      document.getElementById('logoutBtn').classList.remove('hidden');
+      
+      document.getElementById('userName').textContent = currentUser.display_name;
+      document.getElementById('userAvatar').textContent = currentUser.display_name.charAt(0);
+      
+      if (currentUser.is_admin) {
+        document.getElementById('adminBadge').classList.remove('hidden');
+        document.getElementById('adminSection').classList.remove('hidden');
+        renderAdminMenu();
+      } else {
+        document.getElementById('adminBadge').classList.add('hidden');
+        document.getElementById('adminSection').classList.add('hidden');
+      }
+    }
+
+    function updateUIForLoggedOut() {
+      document.getElementById('headerLoginBtn').classList.remove('hidden');
+      document.getElementById('userInfoArea').classList.add('hidden');
+      document.getElementById('logoutBtn').classList.add('hidden');
+      document.getElementById('adminSection').classList.add('hidden');
+    }
+
+    // =====================================================================
+    // 사이드바 렌더링
+    // =====================================================================
+    function renderSidebar() {
+      const list = document.getElementById('appList');
+      
+      list.innerHTML = APPS.map(app => `
+        <div class="app-item ${app.id === selectedApp?.id ? 'active' : ''}" 
+             onclick="selectApp('${app.id}')" data-id="${app.id}">
+          <div class="app-icon" style="background: ${app.iconBg}">${app.icon}</div>
+          <div class="app-info">
+            <div class="app-name">${app.name}</div>
+            <span class="app-tag ${app.tag}">${app.tagLabel}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAdminMenu() {
+      document.getElementById('adminMenu').innerHTML = `
+        <div class="app-item" onclick="showAdminUsers()" data-id="admin-users">
+          <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)">👥</div>
+          <div class="app-info">
+            <div class="app-name">사용자 관리</div>
+          </div>
+        </div>
+        <div class="app-item" onclick="showAdminLogs()" data-id="admin-logs">
+          <div class="app-icon" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%)">📋</div>
+          <div class="app-info">
+            <div class="app-name">접속 로그</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =====================================================================
+    // 탭 전환
+    // =====================================================================
+    function showTab(tab) {
+      currentTab = tab;
+      
+      document.querySelectorAll('.header-nav .nav-link').forEach(el => {
+        el.classList.toggle('active', el.textContent.includes(tab === 'apps' ? '애플리케이션' : '공지'));
+      });
+      
+      if (tab === 'apps') {
+        renderAppDetail();
+      } else if (tab === 'notice') {
+        renderNotice();
+      }
+    }
+
+    // =====================================================================
+    // 앱 선택 & 상세
+    // =====================================================================
+    function selectApp(id) {
+      selectedApp = APPS.find(a => a.id === id);
+      if (!selectedApp) return;
+
+      currentTab = 'apps';
+      
+      document.querySelectorAll('.app-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.id === id);
+      });
+      
+      document.querySelectorAll('.header-nav .nav-link').forEach(el => {
+        el.classList.toggle('active', el.textContent.includes('애플리케이션'));
+      });
+      
+      renderAppDetail();
+    }
+
+    function renderAppDetail() {
+      const app = selectedApp;
+      const isLoggedIn = !!currentUser;
+      const hasPermission = isLoggedIn && (currentUser.is_admin || currentUser.permissions?.[app.id] || currentUser.permissions?._all);
+      
+      let launchHint = '';
+      let launchBtnDisabled = true;
+      
+      if (!isLoggedIn) {
+        launchHint = '로그인 후 이용 가능합니다';
+      } else if (!hasPermission) {
+        launchHint = '🔒 이 앱에 대한 접근 권한이 없습니다';
+      } else {
+        launchHint = `<span class="logged-in">✓ ${currentUser.display_name}님, 실행 가능합니다</span>`;
+        launchBtnDisabled = false;
+      }
+
+      document.getElementById('contentArea').innerHTML = `
+        <!-- 앱 헤더 -->
+        <div class="app-header">
+          <div class="app-header-icon" style="background: ${app.iconBg}">${app.icon}</div>
+          <div class="app-header-info">
+            <h1 class="app-header-title">
+              ${app.name}
+              <span class="app-tag ${app.tag}">${app.tagLabel}</span>
+            </h1>
+            <p class="app-header-desc">${app.desc}</p>
+            <div class="app-meta">
+              <span class="app-meta-item">📦 ${app.version}</span>
+              <span class="app-meta-item">👤 ${app.author}</span>
+              <span class="app-meta-item">📁 ${app.category}</span>
+              <span class="app-meta-item">🕐 ${app.updated}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 실행 섹션 -->
+        <div class="launch-section">
+          <div class="launch-row">
+            <div class="launch-info">
+              <div class="launch-title">앱 실행</div>
+              <div class="launch-hint">${launchHint}</div>
+            </div>
+            <button class="btn btn-primary btn-lg" ${launchBtnDisabled ? 'disabled' : ''} onclick="${isLoggedIn ? 'launchApp()' : 'openLoginModal()'}">
+              ${isLoggedIn ? '▶ 실행하기' : '🔑 로그인하고 실행'}
+            </button>
+          </div>
+        </div>
+
+        <!-- 주요 기능 -->
+        <div class="features-section">
+          <h2 class="section-title">✨ 주요 기능</h2>
+          <div class="features-grid">
+            ${app.features.map(f => `
+              <div class="feature-card">
+                <div class="feature-icon">${f.icon}</div>
+                <div class="feature-title">${f.title}</div>
+                <div class="feature-desc">${f.desc}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- 사용 가이드 -->
+        <div class="guide-section">
+          <h2 class="section-title">📖 사용 가이드</h2>
+          <div class="guide-steps">
+            ${app.guide.map((step, i) => `
+              <div class="guide-step">
+                <div class="step-number">${i + 1}</div>
+                <div class="step-content">
+                  <div class="step-title">${step.title}</div>
+                  <div class="step-desc">${step.desc}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =====================================================================
+    // 공지사항
+    // =====================================================================
+    function renderNotice() {
+      document.querySelectorAll('.app-item').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById('contentArea').innerHTML = `
+        <div class="admin-header">
+          <h1 class="admin-title">📢 공지사항</h1>
+          <p class="admin-subtitle">Preman Launcher의 새로운 소식과 업데이트를 확인하세요.</p>
+        </div>
+        
+        <div class="notice-section">
+          <div class="notice-list">
+            ${NEWS.map(n => `
+              <div class="notice-item">
+                <div class="notice-date">${n.date}</div>
+                <div class="notice-title">
+                  <span class="notice-tag ${n.tag}">${
+                    n.tag === 'update' ? '업데이트' : 
+                    n.tag === 'notice' ? '공지' : '이벤트'
+                  }</span>
+                  ${n.title}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // =====================================================================
+    // Admin 화면
+    // =====================================================================
+    async function showAdminUsers() {
+      document.querySelectorAll('.app-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.id === 'admin-users');
+      });
+
+      document.getElementById('contentArea').innerHTML = `
+        <div class="admin-header">
+          <h1 class="admin-title">👥 사용자 관리</h1>
+          <p class="admin-subtitle">등록된 사용자와 사용량을 관리합니다.</p>
+        </div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card"><div class="stat-value">-</div><div class="stat-label">로딩 중...</div></div>
+        </div>
+        <div class="table-section">
+          <div class="table-header">
+            <span>사용자 목록</span>
+            <button class="btn btn-secondary btn-sm" onclick="showAdminUsers()">🔄 새로고침</button>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr><th>사용자</th><th>역할</th><th>상태</th><th>사용량</th><th>잔여</th></tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr><td colspan="5">로딩 중...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      const result = await callAPI('getUsageStats', { token: authToken });
+      
+      if (result.ok) {
+        const users = result.users;
+        const total = users.length;
+        const active = users.filter(u => u.status === 'ACTIVE').length;
+        const totalUsed = users.reduce((sum, u) => sum + (u.token_used || 0), 0);
+
+        document.getElementById('statsGrid').innerHTML = `
+          <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">전체 사용자</div></div>
+          <div class="stat-card"><div class="stat-value">${active}</div><div class="stat-label">활성 사용자</div></div>
+          <div class="stat-card"><div class="stat-value">${totalUsed.toLocaleString()}</div><div class="stat-label">총 사용량</div></div>
+        `;
+
+        document.getElementById('usersTableBody').innerHTML = users.map(u => {
+          const pct = u.usage_percent || 0;
+          const barClass = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : 'ok';
+          const unlimited = u.role === 'ADMIN' || u.token_limit < 0;
+          
+          return `
+            <tr>
+              <td><strong>${u.display_name}</strong><br><span style="font-size:11px;color:var(--text-muted)">${u.user_id}</span></td>
+              <td>${u.role}</td>
+              <td><span class="status-badge ${u.status === 'ACTIVE' ? 'active' : 'inactive'}">${u.status}</span></td>
+              <td>${unlimited ? '∞' : `<div style="display:flex;align-items:center;gap:8px"><div class="usage-bar"><div class="usage-fill ${barClass}" style="width:${pct}%"></div></div>${u.token_used.toLocaleString()}</div>`}</td>
+              <td>${unlimited ? '무제한' : u.token_remaining.toLocaleString()}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    async function showAdminLogs() {
+      document.querySelectorAll('.app-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.id === 'admin-logs');
+      });
+
+      document.getElementById('contentArea').innerHTML = `
+        <div class="admin-header">
+          <h1 class="admin-title">📋 접속 로그</h1>
+          <p class="admin-subtitle">사용자들의 로그인 및 앱 실행 기록입니다.</p>
+        </div>
+        <div class="table-section">
+          <div class="table-header">
+            <span>최근 접속 기록</span>
+            <button class="btn btn-secondary btn-sm" onclick="showAdminLogs()">🔄 새로고침</button>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr><th>시간</th><th>사용자</th><th>액션</th><th>앱</th></tr>
+              </thead>
+              <tbody id="logsTableBody">
+                <tr><td colspan="4">로딩 중...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      const result = await callAPI('getAccessLogs', { token: authToken, limit: 100 });
+      
+      if (result.ok) {
+        document.getElementById('logsTableBody').innerHTML = result.logs.length 
+          ? result.logs.map(log => `
+              <tr>
+                <td>${log.timestamp}</td>
+                <td>${log.user_id}</td>
+                <td>${log.action}</td>
+                <td>${log.app_id || '-'}</td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="4">로그가 없습니다.</td></tr>';
+      }
+    }
+
+    // =====================================================================
+    // 앱 실행
+    // =====================================================================
+    function launchApp() {
+      if (!selectedApp || !currentUser) return;
+      openAppViewer(selectedApp.url, selectedApp.name, selectedApp.icon);
+    }
+
+    function openAppViewer(url, title, icon) {
+      document.getElementById('viewerTitle').textContent = title;
+      document.getElementById('viewerIcon').textContent = icon;
+      document.getElementById('iframeLoading').style.display = 'block';
+      
+      const separator = url.includes('?') ? '&' : '?';
+      document.getElementById('contentFrame').src = url + separator + 'launcher_token=' + authToken;
+      
+      document.getElementById('appViewer').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAppViewer() {
+      document.getElementById('appViewer').classList.remove('show');
+      document.getElementById('contentFrame').src = '';
+      document.body.style.overflow = '';
+    }
+
+    function hideLoading() {
+      document.getElementById('iframeLoading').style.display = 'none';
+    }
+
+    // =====================================================================
+    // 키보드 이벤트
+    // =====================================================================
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAppViewer();
+        closeLoginModal();
+      }
+      if (e.key === 'Enter' && document.getElementById('loginModal').classList.contains('show')) {
+        handleLogin();
+      }
+    });
+
+    // =====================================================================
+    // 모달 외부 클릭
+    // =====================================================================
+    document.getElementById('loginModal').addEventListener('click', (e) => {
+      if (e.target.id === 'loginModal') closeLoginModal();
+    });
+
+    // =====================================================================
+    // 시작
+    // =====================================================================
+    init();
+  </script>
 </body>
 </html>
