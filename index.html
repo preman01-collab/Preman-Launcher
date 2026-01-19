@@ -1204,19 +1204,39 @@
     // =====================================================================
     // API 호출
     // =====================================================================
-    async function callAPI(action, data = {}) {
-      try {
-        const res = await fetch(AUTH_API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action, ...data })
-        });
-        return await res.json();
-      } catch (e) {
-        console.error('API Error:', e);
-        return { ok: false, reason: 'NETWORK_ERROR' };
+      // Before
+      async function callAPI(action, data = {}) {
+          try {
+              const res = await fetch(AUTH_API_URL, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action, ...data })
+              });
+              return await res.json();
+          } catch (e) {
+              console.error('API Error:', e);
+              return { ok: false, reason: 'NETWORK_ERROR' };
+          }
       }
-    }
+
+      // After (CORS 우회)
+      async function callAPI(action, data = {}) {
+          try {
+              const payload = encodeURIComponent(JSON.stringify({ action, ...data }));
+              const url = `${AUTH_API_URL}?payload=${payload}`;
+
+              const res = await fetch(url, {
+                  method: 'GET',
+                  mode: 'cors',
+                  redirect: 'follow'
+              });
+
+              return await res.json();
+          } catch (e) {
+              console.error('API Error:', e);
+              return { ok: false, reason: 'NETWORK_ERROR' };
+          }
+      }
 
     // =====================================================================
     // 세션 체크
