@@ -1821,6 +1821,20 @@
     `;
         }
 
+        // [추가] 폼 내부에서 엔터키 입력 시 자동 제출 방지 (textarea 제외)
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                // 이벤트가 발생한 요소가 textarea가 아니고, 버튼도 아니라면
+                if (event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON') {
+                    // 로그인 모달이 아닐 때만 막음 (로그인은 엔터로 로그인 되어야 편함)
+                    if (!document.getElementById('loginModal').classList.contains('show')) {
+                        event.preventDefault();
+                        return false;
+                    }
+                }
+            }
+        });
+
         async function init() {
             loadTheme();
             // showLoadingState(); // 캐시를 쓰면 로딩 화면이 필요 없을 수도 있음
@@ -2072,49 +2086,103 @@
         }
 
         function renderSidebar() {
-            const appListEl = document.getElementById('appList');
+            const listEl = document.getElementById('appList');
 
+            // 1. 앱 데이터가 없는 경우 처리
             if (!APPS || APPS.length === 0) {
-                appListEl.innerHTML = `
-                            <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                                    <div style="margin-bottom: 8px;">📭</div>
-                                    <div>등록된 앱이 없습니다</div>
-                                </div>
-                            `;
+                listEl.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                        <div style="margin-bottom: 8px;">📭</div>
+                        <div>등록된 앱이 없습니다</div>
+                    </div>`;
                 return;
             }
 
-            appListEl.innerHTML = APPS.map(app => `
-                            <div class="app-item ${app.id === selectedApp?.id ? 'active' : ''}" onclick="selectApp('${app.id}')" data-id="${app.id}">
-                                <div class="app-icon" style="background: ${app.iconBg || '#6366f1'}; display: flex; align-items: center; justify-content: center;">${renderIcon(app.icon, '24px')}</div>
-                                <div class="app-info">
-                                    <div class="app-name">${app.name}</div>
-                                    ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || ''}</span>` : ''}
-                                </div>
-                            </div>
-                            `).join('');
+            // 2. 현재 DOM에 있는 아이템들을 ID로 매핑 (재활용을 위해)
+            const existingNodes = {};
+            Array.from(listEl.children).forEach(el => {
+                if (el.dataset.id) existingNodes[el.dataset.id] = el;
+            });
+
+            // 3. APPS 데이터를 순회하며 DOM 업데이트 (Diffing 알고리즘)
+            APPS.forEach((app, index) => {
+                let item = existingNodes[app.id];
+
+                // 내용 구성을 위한 HTML 문자열 생성
+                const innerHTML = `
+                    <div class="app-icon" style="background: ${app.iconBg || '#6366f1'}; display: flex; align-items: center; justify-content: center;">${renderIcon(app.icon, '24px')}</div>
+                    <div class="app-info">
+                        <div class="app-name">${app.name}</div>
+                        ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || ''}</span>` : ''}
+                    </div>
+                `;
+
+                if (item) {
+                    // [A] 이미 존재하는 요소면? -> 내용만 업데이트 (깜빡임 방지)
+                    // 내용이 다를 때만 업데이트하여 성능 최적화
+                    if (item.innerHTML !== innerHTML) {
+                        item.innerHTML = innerHTML;
+                    }
+                    // 활성 상태 업데이트
+                    const isActive = (app.id === selectedApp?.id);
+                    if (item.classList.contains('active') !== isActive) {
+                        item.classList.toggle('active', isActive);
+                    }
+
+                    // DOM 위치가 틀렸으면 이동 (정렬 유지)
+                    if (listEl.children[index] !== item) {
+                        listEl.insertBefore(item, listEl.children[index]);
+                    }
+
+                    // 처리된 요소는 명단에서 제거 (나중에 남은건 삭제하려고)
+                    delete existingNodes[app.id];
+                } else {
+                    // [B] 없는 요소면? -> 새로 생성
+                    item = document.createElement('div');
+                    item.className = `app-item ${app.id === selectedApp?.id ? 'active' : ''}`;
+                    item.dataset.id = app.id;
+                    item.onclick = () => selectApp(app.id);
+                    item.innerHTML = innerHTML;
+
+                    // 올바른 위치에 삽입
+                    if (listEl.children[index]) {
+                        listEl.insertBefore(item, listEl.children[index]);
+                    } else {
+                        listEl.appendChild(item);
+                    }
+                }
+            });
+
+            // 4. 데이터에 없는(삭제된) 옛날 요소들 제거
+            for (const id in existingNodes) {
+                existingNodes[id].remove();
+            }
         }
 
         function renderAdminMenu() {
             document.getElementById('adminMenu').innerHTML = `
-                                    <div class="app-item" onclick="showAdminApps()" data-id="admin-apps">
-                                      <div class="app-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%)">📱</div>
-                                      <div class="app-info"><div class="app-name">앱 관리</div></div>
-                                    </div>
-                                    <div class="app-item" onclick="showAdminNotices()" data-id="admin-notices">
-                                      <div class="app-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)">📢</div>
-                                      <div class="app-info"><div class="app-name">공지사항 관리</div></div>
-                                    </div>
-                                    <div class="app-item" onclick="showAdminUsers()" data-id="admin-users">
-                                      <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)">👥</div>
-                                      <div class="app-info"><div class="app-name">사용자 관리</div></div>
-                                    </div>
-                                    <div class="app-item" onclick="showAdminLogs()" data-id="admin-logs">
-                                      <div class="app-icon" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%)">📋</div>
-                                      <div class="app-info"><div class="app-name">접속 로그</div></div>
-                                    </div>
-                                  `;
-        }
+            <div class="app-item" onclick="showAdminApps()" data-id="admin-apps">
+                <div class="app-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%)">📱</div>
+                <div class="app-info"><div class="app-name">앱 관리</div></div>
+            </div>
+            <div class="app-item" onclick="showAdminNotices()" data-id="admin-notices">
+                <div class="app-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)">📢</div>
+                <div class="app-info"><div class="app-name">공지사항 관리</div></div>
+            </div>
+            <div class="app-item" onclick="showAdminUsers()" data-id="admin-users">
+                <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)">👥</div>
+                <div class="app-info"><div class="app-name">사용자 관리</div></div>
+            </div>
+            <div class="app-item" onclick="showAdminLogs()" data-id="admin-logs">
+                <div class="app-icon" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%)">📋</div>
+                <div class="app-info"><div class="app-name">접속 로그</div></div>
+            </div>
+            <div class="app-item" onclick="showAdminTokenLogs()" data-id="admin-token-logs">
+            <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">🪙</div>
+            <div class="app-info"><div class="app-name">토큰 내역</div></div>
+            </div>
+                         `;
+               }
 
         function showTab(tab) {
             currentTab = tab;
@@ -2525,6 +2593,81 @@
             }, 1000);
         }
 
+        async function showAdminTokenLogs() {
+            // 메뉴 활성화 처리
+            document.querySelectorAll('.app-item').forEach(el => el.classList.toggle('active', el.dataset.id === 'admin-token-logs'));
+
+            // 화면 초기화
+            document.getElementById('contentArea').innerHTML = `
+                <div class="admin-header">
+                    <h1 class="admin-title">🪙 토큰 사용 내역</h1>
+                    <p class="admin-subtitle">사용자들의 토큰 사용 및 충전 기록입니다.</p>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <span>최근 100건</span>
+                        <button class="btn btn-secondary btn-sm" onclick="showAdminTokenLogs()">🔄 새로고침</button>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>일시</th>
+                                    <th>사용자</th>
+                                    <th>앱</th>
+                                    <th>유형</th>
+                                    <th>변동</th>
+                                    <th>잔액</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tokenLogsBody">
+                                <tr><td colspan="6" style="text-align:center; padding: 20px;">데이터를 불러오는 중...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // API 호출
+            const result = await callAPI('getTokenLogs', { token: authToken, limit: 100 });
+
+            if (result.ok) {
+                const tbody = document.getElementById('tokenLogsBody');
+                if (!result.logs || result.logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">기록이 없습니다.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = result.logs.map(log => {
+                    // 유형에 따른 스타일 (사용: 빨강, 충전/조정: 초록)
+                    const isUse = log.action.includes('USE');
+                    const colorClass = isUse ? 'text-danger' : 'text-success';
+                    const sign = isUse ? '-' : '+';
+
+                    // 시간 포맷 (기존 함수 재활용)
+                    const timeStr = typeof formatLogTimeWithTooltip === 'function'
+                        ? formatLogTimeWithTooltip(log.timestamp)
+                        : log.timestamp;
+
+                    return `
+                        <tr>
+                            <td>${timeStr}</td>
+                            <td><strong>${log.user_id}</strong></td>
+                            <td>${log.app_id || '-'}</td>
+                            <td><span class="status-badge ${isUse ? 'inactive' : 'active'}">${log.action}</span></td>
+                            <td style="font-weight:bold; color: ${isUse ? '#ef4444' : '#10b981'}">
+                                ${sign}${log.amount.toLocaleString()}
+                            </td>
+                            <td>${log.balance < 0 ? '∞' : log.balance.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                document.getElementById('tokenLogsBody').innerHTML =
+                    `<tr><td colspan="6" style="text-align:center; color: var(--danger);">오류: ${result.reason}</td></tr>`;
+            }
+        }
+
         async function showAdminLogs() {
             document.querySelectorAll('.app-item').forEach(el => el.classList.toggle('active', el.dataset.id === 'admin-logs'));
 
@@ -2612,27 +2755,53 @@
             document.getElementById('iframeLoading').style.display = 'block';
 
             const frame = document.getElementById('contentFrame');
+            // 보안 정책 강화 (필요시 allow-downloads 등 추가)
             frame.referrerPolicy = 'no-referrer';
-     
 
+            // 1. 실제 접속할 전체 URL 생성
+            let finalUrl = url;
             if (authToken && currentUser) {
                 const payload = JSON.stringify({ token: authToken, user: currentUser });
                 const encodedPayload = btoa(unescape(encodeURIComponent(payload)));
                 const separator = url.includes('?') ? '&' : '?';
-                frame.src = `${url}${separator}launcher_data=${encodedPayload}`;
-            } else {
-                frame.src = url;
+                finalUrl = `${url}${separator}launcher_data=${encodedPayload}`;
             }
 
+            // 2. [핵심] Blob URL 생성 (URL 감추기용 껍데기)
+            // 실제 앱 URL(finalUrl)을 품은 HTML 코드를 메모리에 생성합니다.
+            const blobContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+                        iframe { width: 100%; height: 100%; border: none; }
+                    </style>
+                </head>
+                <body>
+                    <iframe src="${finalUrl}" allow="clipboard-read; clipboard-write; geolocation; microphone; camera"></iframe>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([blobContent], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+
+            // 3. iframe에 Blob URL 연결
             document.getElementById('appViewer').classList.add('show');
             document.body.style.overflow = 'hidden';
 
+            // 개발자 도구에서는 src="blob:https://..." 로만 보임
+            frame.src = blobUrl;
+
             frame.onload = () => {
                 hideLoading();
-                hideAppLoading();  // ← 추가: 로딩 오버레이 숨김
+                hideAppLoading();
+                // 메모리 누수 방지를 위해 Blob URL 해제 (약간의 딜레이 후)
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
             };
 
-            // 타임아웃 처리 (10초 후 강제로 로딩 숨김)
+            // 타임아웃 처리
             setTimeout(() => {
                 hideAppLoading();
             }, 10000);
@@ -2755,6 +2924,7 @@
             addFeatureRow();
 
             document.getElementById('appModal').classList.add('show');
+            setTimeout(() => document.getElementById('appIdInput').focus(), 100);
         }
 
         function openEditAppModal(appId) {
@@ -2786,6 +2956,7 @@
             (editingApp.downloads || []).forEach(d => addDownloadRow(d));
 
             document.getElementById('appModal').classList.add('show');
+            setTimeout(() => document.getElementById('appNameInput').focus(), 100);
         }
 
         function closeAppModal() {
@@ -2877,12 +3048,14 @@
 
             const row = document.createElement('div');
             row.className = 'guide-row';
-            row.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
+            row.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start;'; // align-items 수정됨
             row.innerHTML = `
-            <span style="width: 24px; height: 24px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">${idx + 1}</span>
-            <input type="text" class="guide-title" placeholder="단계 제목" value="${data.title || ''}" style="width: 150px;">
-            <input type="text" class="guide-desc" placeholder="단계 설명" value="${data.desc || ''}" style="flex: 1;">
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeGuideRow(this)" style="padding: 4px 8px; height: auto;">✕</button>
+            <span style="width: 24px; height: 24px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-top: 8px;">${idx + 1}</span>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <input type="text" class="guide-title" placeholder="단계 제목 (예: 앱 실행)" value="${data.title || ''}" style="width: 100%; height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text);">
+                <textarea class="guide-desc" placeholder="상세 설명 (Shift+Enter로 줄바꿈 가능)" rows="2" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); resize: vertical; font-family: inherit;">${data.desc || ''}</textarea>
+            </div>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeGuideRow(this)" style="padding: 4px 8px; height: 40px;">✕</button>
         `;
             container.appendChild(row);
         }
@@ -3086,6 +3259,7 @@
             document.getElementById('noticeDateInput').value = today;
 
             document.getElementById('noticeModal').classList.add('show');
+            setTimeout(() => document.getElementById('noticeTitleInput').focus(), 100);
         }
 
         function openEditNoticeModal(noticeId) {
