@@ -1,1703 +1,3173 @@
 <!DOCTYPE html>
 <html lang="ko" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Preman Launcher</title>
-  <style>
-    /* ===== 테마 변수 ===== */
-    :root {
-      --transition-theme: background 0.3s, color 0.3s, border-color 0.3s;
-    }
-
-    [data-theme="dark"] {
-      --bg: #1a1a2e;
-      --bg-light: #16213e;
-      --sidebar: #0f0f1a;
-      --card: #1f1f3a;
-      --text: #ffffff;
-      --text-muted: #8888aa;
-      --accent: #6366f1;
-      --accent-hover: #818cf8;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --line: #2a2a4a;
-      --scrollbar-track: #1a1a2e;
-      --scrollbar-thumb: #3a3a5a;
-      --scrollbar-thumb-hover: #4a4a6a;
-      --overlay: rgba(0, 0, 0, 0.7);
-    }
-
-    [data-theme="light"] {
-      --bg: #f6f6f6;
-      --bg-light: #fafafa;
-      --sidebar: #ffffff;
-      --card: #ffffff;
-      --text: #111111;
-      --text-muted: #777777;
-      --accent: #6366f1;
-      --accent-hover: #4f46e5;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --line: #e9e9e9;
-      --scrollbar-track: #f0f0f0;
-      --scrollbar-thumb: #d1d1d1;
-      --scrollbar-thumb-hover: #b1b1b1;
-      --overlay: rgba(0, 0, 0, 0.5);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
-    * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track); }
-    
-    body {
-      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      transition: var(--transition-theme);
-    }
-
-    .hidden { display: none !important; }
-
-    /* ===== 버튼 ===== */
-    .btn {
-      height: 44px;
-      padding: 0 24px;
-      border-radius: 10px;
-      border: none;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: var(--accent-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .btn-secondary {
-      background: var(--card);
-      color: var(--text);
-      border: 1px solid var(--line);
-    }
-
-    .btn-secondary:hover {
-      background: var(--bg);
-      border-color: var(--text-muted);
-    }
-
-    .btn-sm {
-      height: 36px;
-      padding: 0 14px;
-      font-size: 13px;
-    }
-
-    .btn-lg {
-      height: 52px;
-      padding: 0 32px;
-      font-size: 16px;
-    }
-
-    /* ===== 헤더 ===== */
-    .header {
-      background: var(--sidebar);
-      border-bottom: 1px solid var(--line);
-      padding: 0 24px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-    }
-
-    .brand {
-      font-weight: 800;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-
-    .header-nav {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .nav-link {
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .nav-link:hover {
-      color: var(--text);
-      background: var(--card);
-    }
-
-    .nav-link.active {
-      color: var(--accent);
-      background: rgba(99, 102, 241, 0.1);
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 6px 12px;
-      background: var(--card);
-      border-radius: 8px;
-      font-size: 13px;
-    }
-
-    .user-avatar {
-      width: 28px;
-      height: 28px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      color: white;
-    }
-
-    .user-name {
-      font-weight: 600;
-    }
-
-    .user-badge {
-      background: var(--warning);
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 700;
-    }
-
-    .theme-toggle {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: var(--card);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 16px;
-      transition: all 0.2s;
-    }
-
-    .theme-toggle:hover {
-      background: var(--bg);
-    }
-
-    /* ===== 메인 레이아웃 ===== */
-    .main-layout {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-
-    /* ===== 사이드바 ===== */
-    .sidebar {
-      width: 240px;
-      background: var(--sidebar);
-      border-right: 1px solid var(--line);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-
-    .sidebar-section {
-      padding: 20px 16px;
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .sidebar-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-      padding: 0 8px;
-    }
-
-    .app-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .app-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.15s;
-      border: 1px solid transparent;
-    }
-
-    .app-item:hover {
-      background: var(--card);
-    }
-
-    .app-item.active {
-      background: var(--card);
-      border-color: var(--accent);
-    }
-
-    .app-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    .app-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .app-name {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-
-    .app-tag {
-      display: inline-block;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-
-    .app-tag.featured { background: var(--success); color: white; }
-    .app-tag.new { background: var(--accent); color: white; }
-    .app-tag.beta { background: var(--warning); color: white; }
-
-    /* Admin 메뉴 구분선 */
-    .sidebar-divider {
-      height: 1px;
-      background: var(--line);
-      margin: 16px 8px;
-    }
-
-    /* ===== 콘텐츠 영역 ===== */
-    .content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      background: var(--bg);
-    }
-
-    .content-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding: 32px;
-    }
-
-    /* ===== 앱 상세 화면 ===== */
-    .app-header {
-      display: flex;
-      gap: 24px;
-      margin-bottom: 32px;
-    }
-
-    .app-header-icon {
-      width: 80px;
-      height: 80px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 40px;
-      flex-shrink: 0;
-    }
-
-    .app-header-info {
-      flex: 1;
-    }
-
-    .app-header-title {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .app-header-desc {
-      font-size: 16px;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
-
-    .app-meta {
-      display: flex;
-      gap: 24px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .app-meta-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* 실행 버튼 영역 */
-    .launch-section {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 32px;
-    }
-
-    .launch-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .launch-info {
-      flex: 1;
-    }
-
-    .launch-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .launch-hint {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .launch-hint.logged-in {
-      color: var(--success);
-    }
-
-    /* 기능 소개 */
-    .features-section {
-      margin-bottom: 32px;
-    }
-
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 16px;
-    }
-
-    .feature-card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .feature-icon {
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-
-    .feature-title {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .feature-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    /* 사용 가이드 */
-    .guide-section {
-      margin-bottom: 32px;
-    }
-
-    .guide-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .guide-step {
-      display: flex;
-      gap: 16px;
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .step-number {
-      width: 36px;
-      height: 36px;
-      background: var(--accent);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-
-    .step-content {
-      flex: 1;
-    }
-
-    .step-title {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .step-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-
-    /* 공지사항 탭 */
-    .notice-section {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .notice-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--line);
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .notice-list {
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .notice-item {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--line);
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .notice-item:last-child {
-      border-bottom: none;
-    }
-
-    .notice-item:hover {
-      background: var(--bg);
-    }
-
-    .notice-date {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .notice-title {
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .notice-tag {
-      display: inline-block;
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-      margin-right: 8px;
-    }
-
-    .notice-tag.update { background: var(--success); color: white; }
-    .notice-tag.notice { background: var(--warning); color: white; }
-    .notice-tag.event { background: var(--accent); color: white; }
-
-    /* ===== Admin 대시보드 ===== */
-    .admin-header {
-      margin-bottom: 24px;
-    }
-
-    .admin-title {
-      font-size: 24px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-
-    .admin-subtitle {
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    .stat-card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .stat-value {
-      font-size: 32px;
-      font-weight: 800;
-      color: var(--accent);
-    }
-
-    .stat-label {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .table-section {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 24px;
-    }
-
-    .table-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--line);
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .table-scroll {
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    .data-table th {
-      text-align: left;
-      padding: 12px 16px;
-      background: var(--bg);
-      border-bottom: 1px solid var(--line);
-      font-weight: 600;
-      color: var(--text-muted);
-      position: sticky;
-      top: 0;
-    }
-
-    .data-table td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .data-table tr:hover td {
-      background: var(--bg);
-    }
-
-    .usage-bar {
-      width: 100px;
-      height: 8px;
-      background: var(--line);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-
-    .usage-fill {
-      height: 100%;
-      border-radius: 4px;
-    }
-
-    .usage-fill.ok { background: var(--success); }
-    .usage-fill.warn { background: var(--warning); }
-    .usage-fill.danger { background: var(--danger); }
-
-    .status-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .status-badge.active { background: rgba(16,185,129,0.15); color: var(--success); }
-    .status-badge.inactive { background: rgba(239,68,68,0.15); color: var(--danger); }
-
-    /* ===== 모달 ===== */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--overlay);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 3000;
-      visibility: hidden;
-      opacity: 0;
-      transition: all 0.2s;
-    }
-
-    .modal-overlay.show {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    .modal {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 32px;
-      width: 100%;
-      max-width: 400px;
-      transform: translateY(20px);
-      transition: transform 0.2s;
-    }
-
-    .modal-overlay.show .modal {
-      transform: translateY(0);
-    }
-
-    .modal-header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-
-    .modal-icon {
-      width: 56px;
-      height: 56px;
-      background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      margin: 0 auto 16px;
-    }
-
-    .modal-title {
-      font-size: 20px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-
-    .modal-subtitle {
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
-    .modal-error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text-muted);
-    }
-
-    .form-input {
-      width: 100%;
-      height: 48px;
-      padding: 0 16px;
-      border-radius: 10px;
-      border: 1px solid var(--line);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 15px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .form-input:focus {
-      border-color: var(--accent);
-    }
-
-    .modal-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .modal-footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    /* ===== 앱 뷰어 ===== */
-    .app-viewer-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--bg);
-      z-index: 2000;
-      display: flex;
-      flex-direction: column;
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .app-viewer-overlay.show {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    .app-viewer-header {
-      height: 52px;
-      background: var(--sidebar);
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      flex-shrink: 0;
-    }
-
-    .app-viewer-title {
-      font-weight: 700;
-      font-size: 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .iframe-container {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .crop-iframe {
-      width: 100%;
-      border: none;
-      position: absolute;
-      top: -50px;
-      height: calc(100% + 50px);
-      background: #fff;
-    }
-
-    .iframe-loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      color: var(--text-muted);
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--line);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ===== 푸터 ===== */
-    .footer {
-      background: var(--sidebar);
-      border-top: 1px solid var(--line);
-      padding: 14px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-      color: var(--text-muted);
-      flex-shrink: 0;
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 20px;
-    }
-
-    .footer-link {
-      color: var(--text-muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    .footer-link:hover {
-      color: var(--text);
-    }
-
-    /* ===== 반응형 ===== */
-    @media (max-width: 768px) {
-      .sidebar { width: 200px; }
-      .content-scroll { padding: 20px; }
-      .app-header { flex-direction: column; gap: 16px; }
-      .app-header-icon { width: 60px; height: 60px; font-size: 30px; }
-      .app-header-title { font-size: 22px; }
-      .launch-row { flex-direction: column; align-items: stretch; }
-    }
-  </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preman Launcher</title>
+    <style>
+        :root {
+            --transition-theme: background 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        [data-theme="dark"] {
+            --bg: #1a1a2e;
+            --bg-light: #16213e;
+            --sidebar: #0f0f1a;
+            --card: #1f1f3a;
+            --text: #ffffff;
+            --text-muted: #8888aa;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --line: #2a2a4a;
+            --scrollbar-track: #1a1a2e;
+            --scrollbar-thumb: #3a3a5a;
+            --scrollbar-thumb-hover: #4a4a6a;
+            --overlay: rgba(0, 0, 0, 0.7);
+        }
+
+        [data-theme="light"] {
+            --bg: #f6f6f6;
+            --bg-light: #fafafa;
+            --sidebar: #ffffff;
+            --card: #ffffff;
+            --text: #111111;
+            --text-muted: #777777;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --line: #e9e9e9;
+            --scrollbar-track: #f0f0f0;
+            --scrollbar-thumb: #d1d1d1;
+            --scrollbar-thumb-hover: #b1b1b1;
+            --overlay: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--scrollbar-thumb-hover);
+            }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+        }
+
+        body {
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: var(--transition-theme);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .btn {
+            height: 44px;
+            padding: 0 24px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+            .btn-primary:hover:not(:disabled) {
+                background: var(--accent-hover);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            }
+
+            .btn-primary:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--line);
+        }
+
+            .btn-secondary:hover {
+                background: var(--bg);
+                border-color: var(--text-muted);
+            }
+
+        .btn-sm {
+            height: 36px;
+            padding: 0 14px;
+            font-size: 13px;
+        }
+
+        .btn-xs {
+            height: 28px;
+            padding: 0 10px;
+            font-size: 11px;
+        }
+
+        .btn-lg {
+            height: 52px;
+            padding: 0 32px;
+            font-size: 16px;
+        }
+
+        .header {
+            background: var(--sidebar);
+            border-bottom: 1px solid var(--line);
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-weight: 800;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+            .nav-link:hover {
+                color: var(--text);
+                background: var(--card);
+            }
+
+            .nav-link.active {
+                color: var(--accent);
+                background: rgba(99, 102, 241, 0.1);
+            }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            background: var(--card);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .user-name {
+            font-weight: 600;
+        }
+
+        .user-badge {
+            background: var(--warning);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: var(--card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+            .theme-toggle:hover {
+                background: var(--bg);
+            }
+
+        .main-layout {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: var(--sidebar);
+            border-right: 1px solid var(--line);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-section {
+            padding: 20px 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            padding: 0 8px;
+        }
+
+        .app-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .app-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+
+            .app-item:hover {
+                background: var(--card);
+            }
+
+            .app-item.active {
+                background: var(--card);
+                border-color: var(--accent);
+            }
+
+        .app-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .app-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .app-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .app-tag {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+            .app-tag.featured {
+                background: var(--success);
+                color: white;
+            }
+
+            .app-tag.new {
+                background: var(--accent);
+                color: white;
+            }
+
+            .app-tag.beta {
+                background: var(--warning);
+                color: white;
+            }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--line);
+            margin: 16px 8px;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg);
+        }
+
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        .app-header {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .app-header-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+
+        .app-header-info {
+            flex: 1;
+        }
+
+        .app-header-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-header-desc {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .app-meta {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .app-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .launch-section {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .launch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .launch-info {
+            flex: 1;
+        }
+
+        .launch-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .launch-hint {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+            .launch-hint.logged-in {
+                color: var(--success);
+            }
+
+        .features-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .feature-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .feature-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .guide-section {
+            margin-bottom: 32px;
+        }
+
+        .guide-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .guide-step {
+            display: flex;
+            gap: 16px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .download-section {
+            margin-bottom: 32px;
+        }
+
+        .download-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .download-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .download-info {
+            flex: 1;
+        }
+
+        .download-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .download-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .download-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .download-login-hint {
+            font-size: 12px;
+            color: var(--warning);
+            margin-top: 8px;
+        }
+
+        .notice-section {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .notice-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .notice-item {
+            border-bottom: 1px solid var(--line);
+        }
+
+            .notice-item:last-child {
+                border-bottom: none;
+            }
+
+        .notice-header {
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.15s;
+        }
+
+            .notice-header:hover {
+                background: var(--bg);
+            }
+
+        .notice-header-left {
+            flex: 1;
+        }
+
+        .notice-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .notice-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .notice-tag {
+            display: inline-block;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+            .notice-tag.update {
+                background: var(--success);
+                color: white;
+            }
+
+            .notice-tag.notice {
+                background: var(--warning);
+                color: white;
+            }
+
+            .notice-tag.event {
+                background: var(--accent);
+                color: white;
+            }
+
+        .notice-arrow {
+            font-size: 12px;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        .notice-item.open .notice-arrow {
+            transform: rotate(180deg);
+        }
+
+        .notice-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: var(--bg);
+        }
+
+        .notice-item.open .notice-content {
+            max-height: 500px;
+        }
+
+        .notice-content-inner {
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-muted);
+        }
+
+            .notice-content-inner p {
+                margin-bottom: 12px;
+            }
+
+                .notice-content-inner p:last-child {
+                    margin-bottom: 0;
+                }
+
+            .notice-content-inner ul {
+                margin: 12px 0;
+                padding-left: 20px;
+            }
+
+            .notice-content-inner li {
+                margin-bottom: 6px;
+            }
+
+        .admin-header {
+            margin-bottom: 24px;
+        }
+
+        .admin-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .admin-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .table-section {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-scroll {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+            .data-table th {
+                text-align: left;
+                padding: 12px 16px;
+                background: var(--bg);
+                border-bottom: 1px solid var(--line);
+                font-weight: 600;
+                color: var(--text-muted);
+                position: sticky;
+                top: 0;
+            }
+
+            .data-table td {
+                padding: 12px 16px;
+                border-bottom: 1px solid var(--line);
+                vertical-align: middle;
+            }
+
+            .data-table tr:hover td {
+                background: var(--bg);
+            }
+
+        .usage-bar {
+            width: 80px;
+            height: 8px;
+            background: var(--line);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .usage-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+            .usage-fill.ok {
+                background: var(--success);
+            }
+
+            .usage-fill.warn {
+                background: var(--warning);
+            }
+
+            .usage-fill.danger {
+                background: var(--danger);
+            }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+            .status-badge.active {
+                background: rgba(16,185,129,0.15);
+                color: var(--success);
+            }
+
+            .status-badge.inactive {
+                background: rgba(239,68,68,0.15);
+                color: var(--danger);
+            }
+
+        .action-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--overlay);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+
+            .modal-overlay.show {
+                visibility: visible;
+                opacity: 1;
+            }
+
+        .modal {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--bg);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .modal-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .modal-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .form-input {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+            .form-input:focus {
+                border-color: var(--accent);
+            }
+
+            .form-input:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+            .form-checkbox input {
+                width: 18px;
+                height: 18px;
+                accent-color: var(--accent);
+            }
+
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-actions-row {
+            display: flex;
+            gap: 12px;
+        }
+
+            .modal-actions-row .btn {
+                flex: 1;
+            }
+
+        .modal-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .app-viewer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+            .app-viewer-overlay.show {
+                visibility: visible;
+                opacity: 1;
+            }
+
+        .app-viewer-header {
+            height: 52px;
+            background: var(--sidebar);
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+
+        .app-viewer-title {
+            font-weight: 700;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .iframe-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* iframe 크롭 조정: GAS 경고바만 숨기고 앱 헤더는 보이게 */
+        .crop-iframe {
+            width: 100%;
+            border: none;
+            position: absolute;
+            top: -8px; /* GAS 경고바 숨기기용 */
+            height: calc(100% + 28px);
+            background: #fff;
+        }
+
+        .iframe-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--line);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .footer {
+            background: var(--sidebar);
+            border-top: 1px solid var(--line);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+            .footer-link:hover {
+                color: var(--text);
+            }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .content-scroll {
+                padding: 20px;
+            }
+
+            .app-header {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .app-header-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
+
+            .app-header-title {
+                font-size: 22px;
+            }
+
+            .launch-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- ===== 헤더 ===== -->
-  <header class="header">
-    <div class="brand">
-      <div class="brand-icon">⚡</div>
-      Preman Launcher
-    </div>
-    
-    <nav class="header-nav">
-      <span class="nav-link active" onclick="showTab('apps')">애플리케이션</span>
-      <span class="nav-link" onclick="showTab('notice')">공지사항</span>
-    </nav>
-    
-    <div class="header-right">
-      <!-- 비로그인 상태 -->
-      <button class="btn btn-primary btn-sm" id="headerLoginBtn" onclick="openLoginModal()">
-        로그인
-      </button>
-      
-      <!-- 로그인 상태 -->
-      <div class="user-info hidden" id="userInfoArea">
-        <div class="user-avatar" id="userAvatar">홍</div>
-        <span class="user-name" id="userName">사용자</span>
-        <span class="user-badge hidden" id="adminBadge">ADMIN</span>
-      </div>
-      <button class="btn btn-secondary btn-sm hidden" id="logoutBtn" onclick="handleLogout()">
-        로그아웃
-      </button>
-      
-      <div class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</div>
-    </div>
-  </header>
-
-  <!-- ===== 메인 레이아웃 ===== -->
-  <div class="main-layout">
-    
-    <!-- 사이드바 -->
-    <aside class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-title">애플리케이션</div>
-        <div class="app-list" id="appList"></div>
-        
-        <!-- Admin 메뉴 (로그인 후 ADMIN만) -->
-        <div class="hidden" id="adminSection">
-          <div class="sidebar-divider"></div>
-          <div class="sidebar-title">관리자</div>
-          <div class="app-list" id="adminMenu"></div>
+    <!-- 앱 로딩 오버레이 -->
+    <div id="appLoadingOverlay" class="hidden" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--overlay);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+">
+        <div style="
+        background: var(--card);
+        padding: 40px 60px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    ">
+            <div id="loadingAppIcon" style="
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 20px;
+        ">📱</div>
+            <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;" id="loadingAppName">앱 이름</div>
+            <div style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">앱을 실행하는 중...</div>
+            <div class="spinner" style="margin: 0 auto;"></div>
         </div>
-      </div>
-    </aside>
-
-    <!-- 콘텐츠 -->
-    <main class="content">
-      <div class="content-scroll" id="contentArea">
-        <!-- 동적 콘텐츠 -->
-      </div>
-    </main>
-  </div>
-
-  <!-- ===== 푸터 ===== -->
-  <footer class="footer">
-    <div>© 2025 Premandata. All rights reserved.</div>
-    <div class="footer-links">
-      <a href="#" class="footer-link">이용약관</a>
-      <a href="#" class="footer-link">개인정보처리방침</a>
-      <a href="mailto:contact@premandata.com" class="footer-link">문의하기</a>
     </div>
-  </footer>
 
-  <!-- ===== 로그인 모달 ===== -->
-  <div class="modal-overlay" id="loginModal">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-icon">⚡</div>
-        <h2 class="modal-title">로그인</h2>
-        <p class="modal-subtitle">앱을 실행하려면 로그인이 필요합니다</p>
-      </div>
-      
-      <div class="modal-error hidden" id="loginError"></div>
-      
-      <div class="form-group">
-        <label class="form-label">아이디</label>
-        <input type="text" class="form-input" id="loginId" placeholder="아이디를 입력하세요">
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">비밀번호</label>
-        <input type="password" class="form-input" id="loginPw" placeholder="비밀번호를 입력하세요">
-      </div>
-      
-      <div class="modal-actions">
-        <button class="btn btn-primary" id="loginSubmitBtn" onclick="handleLogin()">로그인</button>
-        <button class="btn btn-secondary" onclick="closeLoginModal()">취소</button>
-      </div>
-      
-      <p class="modal-footer">
-        계정이 없으신가요? 관리자에게 문의해주세요.
-      </p>
+    <header class="header">
+        <div class="brand">
+            <img src="https://imgur.com/PgWeCFA.png"
+                 alt="Preman"
+                 class="brand-logo"
+                 style="height: 28px; width: auto; margin-right: 0px;">
+            Preman Launcher
+        </div>
+
+        <nav class="header-nav">
+            <span class="nav-link active" data-tab="apps" onclick="showTab('apps')">애플리케이션</span>
+            <span class="nav-link" data-tab="notice" onclick="showTab('notice')">공지사항</span>
+        </nav>
+
+        <div class="header-right">
+            <button class="btn btn-primary btn-sm" id="headerLoginBtn" onclick="openLoginModal()">로그인</button>
+
+            <div class="user-info hidden" id="userInfoArea">
+                <div class="user-avatar" id="userAvatar">홍</div>
+                <span class="user-name" id="userName">사용자</span>
+                <span class="user-badge hidden" id="adminBadge">ADMIN</span>
+            </div>
+            <button class="btn btn-secondary btn-sm hidden" id="logoutBtn" onclick="openLogoutModal()">로그아웃</button>
+
+            <div class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">애플리케이션</div>
+                <div class="app-list" id="appList"></div>
+
+                <div class="hidden" id="adminSection">
+                    <div class="sidebar-divider"></div>
+                    <div class="sidebar-title">관리자</div>
+                    <div class="app-list" id="adminMenu"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <div class="content-scroll" id="contentArea"></div>
+        </main>
     </div>
-  </div>
 
-  <!-- ===== 앱 뷰어 ===== -->
-  <div class="app-viewer-overlay" id="appViewer">
-    <div class="app-viewer-header">
-      <div class="app-viewer-title">
-        <span id="viewerIcon">🎙️</span>
-        <span id="viewerTitle">앱 이름</span>
-      </div>
-      <button class="btn btn-secondary btn-sm" onclick="closeAppViewer()">✕ 닫기 (ESC)</button>
+    <footer class="footer">
+        <div>© 2025 Premandata. All rights reserved.</div>
+        <div class="footer-links">
+            <a href="#" class="footer-link">이용약관</a>
+            <a href="#" class="footer-link">개인정보처리방침</a>
+            <a href="mailto:contact@premandata.com" class="footer-link">문의하기</a>
+        </div>
+    </footer>
+
+    <!-- 로그인 모달 -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">⚡</div>
+                <h2 class="modal-title">로그인</h2>
+                <p class="modal-subtitle">앱을 실행하려면 로그인이 필요합니다</p>
+            </div>
+
+            <div class="modal-error hidden" id="loginError"></div>
+
+            <div class="form-group">
+                <label class="form-label">아이디</label>
+                <input type="text" class="form-input" id="loginId" placeholder="아이디를 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">비밀번호</label>
+                <input type="password" class="form-input" id="loginPw" placeholder="비밀번호를 입력하세요">
+            </div>
+
+            <div class="form-group" style="margin-top: -8px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="rememberIdCheck" style="width: 16px; height: 16px;">
+                    아이디 저장
+                </label>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="loginSubmitBtn" onclick="handleLogin()">로그인</button>
+                <button class="btn btn-secondary" onclick="closeLoginModal()">취소</button>
+            </div>
+
+            <p class="modal-footer">계정이 없으신가요? 관리자에게 문의해주세요.</p>
+        </div>
     </div>
-    <div class="iframe-container">
-      <div class="iframe-loading" id="iframeLoading">
-        <div class="spinner"></div>
-        <div>앱을 불러오는 중...</div>
-      </div>
-      <iframe id="contentFrame" class="crop-iframe" onload="hideLoading()"></iframe>
+
+    <!-- 로그아웃 확인 모달 -->
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal" style="max-width: 360px;">
+            <div class="modal-header">
+                <div class="modal-icon" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%);">👋</div>
+                <h2 class="modal-title">로그아웃</h2>
+                <p class="modal-subtitle">정말 로그아웃 하시겠습니까?</p>
+            </div>
+
+            <div class="modal-actions">
+                <div class="modal-actions-row">
+                    <button class="btn btn-primary" id="logoutConfirmBtn" onclick="confirmLogout()">로그아웃</button>
+                    <button class="btn btn-secondary" onclick="closeLogoutModal()">아니오</button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // =====================================================================
-    // 설정
-    // =====================================================================
-      const AUTH_API_URL = 'https://script.google.com/macros/s/AKfycbwmjjNZmsyX7YlyamQb_Wk3gTS2aw4JIXZceocJ2etGcK-CtA3jHJCH4GjXYo9cx_EU/exec';  // 배포 후 URL 입력
-    
-    // =====================================================================
-    // 앱 데이터 (공개)
-    // =====================================================================
-    const APPS = [
-      {
-        id: 'asr',
-        name: 'Prean ASR',
-        desc: '다국어 음성 전사 프로그램',
-        url: 'https://script.google.com/macros/s/YOUR_ASR_URL/exec',
-        icon: '🎙️',
-        iconBg: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
-        tag: 'featured',
-        tagLabel: 'FEATURED',
-        version: 'v1.2.0',
-        author: 'Premandata',
-        category: '음성 인식',
-        updated: '2025.01.15',
-        features: [
-          { icon: '🎯', title: '높은 정확도', desc: '최신 AI 모델을 활용한 정확한 음성 인식' },
-          { icon: '🌏', title: '다국어 지원', desc: '한국어, 영어, 일본어 등 다양한 언어 지원' },
-          { icon: '⏱️', title: '타임코드 생성', desc: '자동으로 타임코드를 생성하여 편집 효율 향상' },
-          { icon: '👥', title: '화자 분리', desc: '여러 화자를 자동으로 구분하여 표시' },
-        ],
-        guide: [
-          { title: '음성 파일 업로드', desc: 'MP3, WAV, M4A 등 다양한 형식의 음성 파일을 업로드합니다.' },
-          { title: '언어 및 옵션 설정', desc: '전사할 언어를 선택하고, 화자 분리 등 옵션을 설정합니다.' },
-          { title: '전사 시작', desc: '설정을 확인하고 전사를 시작합니다. 파일 길이에 따라 소요 시간이 달라집니다.' },
-          { title: '결과 확인 및 다운로드', desc: '전사 결과를 확인하고 CSV, PDF 등 다양한 형식으로 다운로드합니다.' },
-        ]
-      },
-      {
-        id: 'docs',
-        name: 'Premandata Docs',
-        desc: '문서 작성 및 관리 도구',
-        url: 'https://script.google.com/macros/s/YOUR_DOCS_URL/exec',
-        icon: '📝',
-        iconBg: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)',
-        tag: 'new',
-        tagLabel: 'NEW',
-        version: 'v1.5.0',
-        author: 'Premandata',
-        category: '문서',
-        updated: '2025.01.10',
-        features: [
-          { icon: '✍️', title: '실시간 편집', desc: '브라우저에서 바로 문서를 작성하고 편집' },
-          { icon: '📁', title: '자동 저장', desc: '작업 내용이 자동으로 저장되어 데이터 손실 방지' },
-          { icon: '🔗', title: '공유 기능', desc: '팀원들과 쉽게 문서를 공유하고 협업' },
-          { icon: '📤', title: '다양한 내보내기', desc: 'PDF, Word, HTML 등 다양한 형식으로 내보내기' },
-        ],
-        guide: [
-          { title: '새 문서 만들기', desc: '새 문서 버튼을 클릭하여 빈 문서를 생성합니다.' },
-          { title: '내용 작성', desc: '에디터에서 텍스트, 이미지, 표 등을 추가합니다.' },
-          { title: '저장 및 공유', desc: '문서를 저장하고 필요시 팀원들과 공유합니다.' },
-        ]
-      },
-      {
-        id: 'analytics',
-        name: 'Analytics',
-        desc: '데이터 분석 대시보드',
-        url: 'https://script.google.com/macros/s/YOUR_ANALYTICS_URL/exec',
-        icon: '📊',
-        iconBg: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
-        tag: 'beta',
-        tagLabel: 'BETA',
-        version: 'v0.9.0',
-        author: 'Premandata',
-        category: '분석',
-        updated: '2025.01.08',
-        features: [
-          { icon: '📈', title: '시각화', desc: '데이터를 차트와 그래프로 시각화' },
-          { icon: '🔍', title: '인사이트', desc: '데이터에서 의미 있는 인사이트 도출' },
-          { icon: '📋', title: '리포트', desc: '자동화된 리포트 생성 기능' },
-        ],
-        guide: [
-          { title: '데이터 연결', desc: '분석할 데이터 소스를 연결합니다.' },
-          { title: '대시보드 구성', desc: '원하는 차트와 지표를 배치합니다.' },
-          { title: '분석 및 공유', desc: '데이터를 분석하고 리포트를 공유합니다.' },
-        ]
-      },
-    ];
+    <!-- 사용자 편집 모달 -->
+    <div class="modal-overlay" id="editUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">👤</div>
+                <h2 class="modal-title">사용자 관리</h2>
+                <p class="modal-subtitle" id="editUserSubtitle">사용자 정보를 수정합니다</p>
+            </div>
 
-    const NEWS = [
-      { date: '2025.01.15', tag: 'update', title: 'ASR 엔진 v2.1.0 업데이트 - 일본어 인식 정확도 대폭 향상' },
-      { date: '2025.01.12', tag: 'notice', title: '서버 점검 안내 (1/20 02:00-04:00 예정)' },
-      { date: '2025.01.10', tag: 'update', title: 'Docs 앱 v1.5.0 - 실시간 협업 기능 추가' },
-      { date: '2025.01.08', tag: 'event', title: 'Analytics 베타 테스트 참여자 모집' },
-      { date: '2025.01.05', tag: 'update', title: '런처 UI 개선 및 다크모드 지원' },
-      { date: '2024.12.28', tag: 'notice', title: '연말연시 운영 안내' },
-    ];
+            <div class="modal-error hidden" id="editUserError"></div>
+            <div class="modal-success hidden" id="editUserSuccess"></div>
 
-    // =====================================================================
-    // 상태
-    // =====================================================================
-    let currentUser = null;
-    let authToken = null;
-    let selectedApp = APPS[0];
-    let currentTab = 'apps';
+            <input type="hidden" id="editUserId">
 
-    // =====================================================================
-    // 초기화
-    // =====================================================================
-    function init() {
-      loadTheme();
-      renderSidebar();
-      checkSession();
-      selectApp(APPS[0].id);
-    }
+            <div class="form-group">
+                <label class="form-label">표시 이름</label>
+                <input type="text" class="form-input" id="editDisplayName" disabled>
+            </div>
 
-    // =====================================================================
-    // 테마
-    // =====================================================================
-    function toggleTheme() {
-      const html = document.documentElement;
-      const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', newTheme);
-      localStorage.setItem('launcher-theme', newTheme);
-      updateThemeIcon();
-    }
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">역할</label>
+                    <input type="text" class="form-input" id="editRole" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">상태</label>
+                    <select class="form-input" id="editStatus">
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="INACTIVE">INACTIVE</option>
+                    </select>
+                </div>
+            </div>
 
-    function loadTheme() {
-      const saved = localStorage.getItem('launcher-theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', saved);
-      updateThemeIcon();
-    }
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">토큰 한도</label>
+                    <input type="number" class="form-input" id="editTokenLimit" placeholder="-1 = 무제한">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">현재 사용량</label>
+                    <input type="number" class="form-input" id="editTokenUsed">
+                </div>
+            </div>
 
-    function updateThemeIcon() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
-    }
+            <div class="form-group">
+                <label class="form-label">앱 권한</label>
+                <div id="editPermissions" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px;"></div>
+            </div>
 
-    // =====================================================================
-    // API 호출
-    // =====================================================================
-      // Before
-      async function callAPI(action, data = {}) {
-          try {
-              const res = await fetch(AUTH_API_URL, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action, ...data })
-              });
-              return await res.json();
-          } catch (e) {
-              console.error('API Error:', e);
-              return { ok: false, reason: 'NETWORK_ERROR' };
-          }
-      }
+            <div class="form-group">
+                <label class="form-label">새 비밀번호 (변경 시에만 입력)</label>
+                <input type="password" class="form-input" id="editNewPassword" placeholder="비밀번호 변경">
+            </div>
 
-      // After (CORS 우회)
-      async function callAPI(action, data = {}) {
-          try {
-              const payload = encodeURIComponent(JSON.stringify({ action, ...data }));
-              const url = `${AUTH_API_URL}?payload=${payload}`;
+            <div class="modal-actions">
+                <div class="modal-actions-row">
+                    <button class="btn btn-primary" onclick="saveUserChanges()">💾 저장</button>
+                    <button class="btn btn-secondary" onclick="closeEditUserModal()">취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-              const res = await fetch(url, {
-                  method: 'GET',
-                  mode: 'cors',
-                  redirect: 'follow'
-              });
+    <!-- 앱 뷰어 -->
+    <div class="app-viewer-overlay" id="appViewer">
+        <div class="app-viewer-header">
+            <div class="app-viewer-title">
+                <span id="viewerIcon" style="display: flex; align-items: center; justify-content: center;"></span>
+                <span id="viewerTitle">앱 이름</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="closeAppViewer()">✕ 닫기 (ESC)</button>
+        </div>
+        <div class="iframe-container">
+            <div class="iframe-loading" id="iframeLoading">
+                <div class="spinner"></div>
+                <div>앱을 불러오는 중...</div>
+            </div>
+            <iframe id="contentFrame" class="crop-iframe" onload="hideLoading()"></iframe>
+        </div>
+    </div>
 
-              return await res.json();
-          } catch (e) {
-              console.error('API Error:', e);
-              return { ok: false, reason: 'NETWORK_ERROR' };
-          }
-      }
+    <!-- 앱 관리 모달 -->
+    <div class="modal-overlay" id="appModal">
+        <div class="modal" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 id="appModalTitle">새 앱 추가</h2>
+                <button class="modal-close" onclick="closeAppModal()" title="닫기">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="appForm" onsubmit="event.preventDefault(); saveApp();">
+                <!-- 기본 정보 -->
+                <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted);">📋 기본 정보</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>앱 ID * <span style="font-size: 11px; color: var(--text-muted);">(영문, 숫자, -만 가능)</span></label>
+                            <input type="text" id="appIdInput" placeholder="my-app" pattern="[a-zA-Z0-9\-]+" required>
+                        </div>
+                        <div class="form-group">
+                            <label>앱 이름 *</label>
+                            <input type="text" id="appNameInput" placeholder="My Application" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>설명</label>
+                        <input type="text" id="appDescInput" placeholder="앱에 대한 간단한 설명">
+                    </div>
+                    <div class="form-group">
+                        <label>앱 URL *</label>
+                        <input type="url" id="appUrlInput" placeholder="https://script.google.com/..." required>
+                    </div>
+                </div>
 
-    // =====================================================================
-    // 세션 체크
-    // =====================================================================
-    async function checkSession() {
-      const savedToken = localStorage.getItem('auth_token');
-      
-      if (savedToken) {
-        const result = await callAPI('verify', { token: savedToken });
-        if (result.ok) {
-          authToken = savedToken;
-          currentUser = result.user;
-          updateUIForLoggedIn();
-          return;
-        } else {
-          localStorage.removeItem('auth_token');
+                <!-- 외관 설정 -->
+                <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted);">🎨 외관 설정</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>아이콘 (이모지)</label>
+                            <input type="text" id="appIconInput" placeholder="📱 또는 fas fa-icon" style="font-size: 14px;">
+                        </div>
+                        <div class="form-group">
+                            <label>아이콘 배경</label>
+                            <select id="appIconBgInput" class="form-input">
+                                <option value="linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)">💜 퍼플</option>
+                                <option value="linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)">💙 블루</option>
+                                <option value="linear-gradient(135deg, #10b981 0%, #059669 100%)">💚 그린</option>
+                                <option value="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">🧡 오렌지</option>
+                                <option value="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)">❤️ 레드</option>
+                                <option value="linear-gradient(135deg, #ec4899 0%, #db2777 100%)">💗 핑크</option>
+                                <option value="linear-gradient(135deg, #6b7280 0%, #374151 100%)">🩶 그레이</option>
+                                <option value="linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)">🩵 시안 (Cyan)</option>
+                                <option value="linear-gradient(135deg, #eab308 0%, #a16207 100%)">💛 옐로우 (Yellow)</option>
+                                <option value="linear-gradient(135deg, #4f46e5 0%, #312e81 100%)">👖 인디고 (Indigo)</option>
+                                <option value="linear-gradient(135deg, #84cc16 0%, #4d7c0f 100%)">🌿 라임 (Lime)</option>
+                                <option value="linear-gradient(135deg, #1f2937 0%, #000000 100%)">🖤 블랙 (Midnight)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>태그</label>
+                            <select id="appTagInput">
+                                <option value="">없음</option>
+                                <option value="new">🆕 NEW</option>
+                                <option value="featured">⭐ FEATURED</option>
+                                <option value="beta">🧪 BETA</option>
+                                <option value="updated">🔄 UPDATED</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>태그 라벨 (표시 텍스트)</label>
+                            <input type="text" id="appTagLabelInput" placeholder="자동 설정됨">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 메타 정보 -->
+                <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted);">📊 메타 정보</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>카테고리</label>
+                            <select id="appCategoryInput">
+                                <option value="">선택하세요</option>
+                                <option value="음성 인식">🎙️ 음성 인식 (ASR)</option>
+                                <option value="품질 검수">✅ 품질 검수 (QC)</option>
+                                <option value="오디오 편집">🎚️ 오디오 편집</option>
+                                <option value="스크립트">📝 대본 / 스크립트</option>
+                                <option value="유틸리티">🛠️ 유틸리티</option>
+                                <option value="기타">📦 기타</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>버전</label>
+                            <input type="text" id="appVersionInput" placeholder="v1.0.0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>작성자</label>
+                            <input type="text" id="appAuthorInput" placeholder="Premandata" value="Premandata">
+                        </div>
+                        <div class="form-group">
+                            <label>최종 업데이트</label>
+                            <input type="text" id="appUpdatedInput" placeholder="2025.01.21">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 주요 기능 -->
+                <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted);">✨ 주요 기능 <span style="font-weight: normal;">(최대 4개)</span></h3>
+                    <div id="featuresContainer">
+                        <!-- 동적으로 추가됨 -->
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addFeatureRow()" style="margin-top: 8px;">+ 기능 추가</button>
+                </div>
+
+                <!-- 사용 가이드 -->
+                <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted);">📖 사용 가이드 <span style="font-weight: normal;">(단계별)</span></h3>
+                    <div id="guideContainer">
+                        <!-- 동적으로 추가됨 -->
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addGuideRow()" style="margin-top: 8px;">+ 단계 추가</button>
+                </div>
+
+                <!-- 다운로드 -->
+                <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted);">📥 다운로드 파일</h3>
+                    <div id="downloadsContainer">
+                        <!-- 동적으로 추가됨 -->
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addDownloadRow()" style="margin-top: 8px;">+ 다운로드 추가</button>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAppModal()">취소</button>
+                    <button type="submit" class="btn btn-primary" id="saveAppBtn">💾 저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 공지사항 관리 모달 -->
+    <div class="modal-overlay" id="noticeModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="noticeModalTitle">새 공지 추가</h2>
+                <button class="modal-close" onclick="closeNoticeModal()" title="닫기">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="noticeForm" onsubmit="event.preventDefault(); saveNotice();">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>날짜</label>
+                        <input type="text" id="noticeDateInput" placeholder="2025.01.21">
+                    </div>
+                    <div class="form-group">
+                        <label>태그</label>
+                        <select id="noticeTagInput">
+                            <option value="">선택 안함</option>
+                            <option value="notice">공지</option>
+                            <option value="update">업데이트</option>
+                            <option value="event">이벤트</option>
+                            <option value="maintenance">점검</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>제목 *</label>
+                    <input type="text" id="noticeTitleInput" placeholder="공지사항 제목" required>
+                </div>
+                <div class="form-group">
+                    <label>내용 (HTML 가능)</label>
+                    <textarea id="noticeContentInput" rows="6" placeholder="공지사항 내용을 입력하세요..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="noticeActiveInput" checked>
+                        공개 상태
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeNoticeModal()">취소</button>
+                    <button type="submit" class="btn btn-primary" id="saveNoticeBtn">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const AUTH_API_URL = 'https://script.google.com/macros/s/AKfycbwmjjNZmsyX7YlyamQb_Wk3gTS2aw4JIXZceocJ2etGcK-CtA3jHJCH4GjXYo9cx_EU/exec';
+
+        let currentUser = null;
+        let authToken = null;
+        let selectedApp = null;          // ← 변경
+        let currentTab = 'apps';
+        let editingUser = null;
+        let allUsersData = [];
+        let APPS = [];                   // ← 추가 (동적 로드)
+        let NEWS = [];                   // ← 추가 (동적 로드)
+        let appsLoaded = false;          // ← 추가
+        let noticesLoaded = false;
+
+        // 아이콘 렌더링 (이모지, 이미지 URL, Font Awesome 지원)
+        function renderIcon(icon, size = '24px') {
+            if (!icon) return '📱';
+
+            // 이미지 URL인 경우
+            if (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('data:')) {
+                return `<img src="${icon}" style="width: ${size}; height: ${size}; object-fit: contain; border-radius: 4px;" onerror="this.outerHTML='📱'">`;
+            }
+
+            // Font Awesome인 경우 (fas, far, fab로 시작)
+            if (/^fa[srbldk]?\s+fa-/.test(icon)) {
+                return `<i class="${icon}" style="font-size: ${size}; line-height: 1;"></i>`;
+            }
+
+            // 이모지 또는 텍스트
+            return icon;
         }
-      }
-      
-      updateUIForLoggedOut();
-    }
 
-    // =====================================================================
-    // 로그인/로그아웃
-    // =====================================================================
-    function openLoginModal() {
-      document.getElementById('loginModal').classList.add('show');
-      document.getElementById('loginId').focus();
-      document.getElementById('loginError').classList.add('hidden');
-    }
+        function formatLogTimeWithTooltip(timestampStr) {
+            try {
+                console.log('📊 Raw timestamp:', timestampStr, 'Type:', typeof timestampStr);
 
-    function closeLoginModal() {
-      document.getElementById('loginModal').classList.remove('show');
-      document.getElementById('loginId').value = '';
-      document.getElementById('loginPw').value = '';
-    }
+                let logDate = null;
 
-    async function handleLogin() {
-      const id = document.getElementById('loginId').value.trim();
-      const pw = document.getElementById('loginPw').value;
-      const errorEl = document.getElementById('loginError');
-      const btn = document.getElementById('loginSubmitBtn');
+                // 여러 형식 시도
+                // 형식 1: "2025-01-20 14:30:45"
+                if (timestampStr.includes(' ')) {
+                    logDate = new Date(timestampStr.replace(' ', 'T') + '+09:00');
+                }
+                // 형식 2: "2025-01-20T14:30:45"
+                else if (timestampStr.includes('T')) {
+                    logDate = new Date(timestampStr + '+09:00');
+                }
+                // 형식 3: 숫자 타임스탬프 (밀리초)
+                else if (!isNaN(timestampStr)) {
+                    logDate = new Date(parseInt(timestampStr));
+                }
 
-      if (!id || !pw) {
-        errorEl.textContent = '아이디와 비밀번호를 입력하세요.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
+                // 파싱 실패 확인
+                if (!logDate || isNaN(logDate.getTime())) {
+                    console.warn('❌ Failed to parse timestamp:', timestampStr);
+                    return `<span title="${timestampStr}">파싱 오류</span>`;
+                }
 
-      btn.disabled = true;
-      btn.textContent = '로그인 중...';
+                const now = new Date();
+                const diffMs = now - logDate;
+                const diffSec = Math.floor(diffMs / 1000);
+                const diffMin = Math.floor(diffSec / 60);
+                const diffHour = Math.floor(diffMin / 60);
+                const diffDay = Math.floor(diffHour / 24);
 
-      const result = await callAPI('login', { userId: id, password: pw });
+                let displayText = '';
+                if (diffSec < 60) displayText = '방금 전';
+                else if (diffMin < 60) displayText = `${diffMin}분 전`;
+                else if (diffHour < 24) displayText = `${diffHour}시간 전`;
+                else if (diffDay < 7) displayText = `${diffDay}일 전`;
+                else {
+                    const year = logDate.getFullYear();
+                    const month = String(logDate.getMonth() + 1).padStart(2, '0');
+                    const date = String(logDate.getDate()).padStart(2, '0');
+                    const hours = String(logDate.getHours()).padStart(2, '0');
+                    const minutes = String(logDate.getMinutes()).padStart(2, '0');
+                    displayText = `${year}.${month}.${date} ${hours}:${minutes}`;
+                }
 
-      btn.disabled = false;
-      btn.textContent = '로그인';
+                return `<span title="${timestampStr}">${displayText}</span>`;
+            } catch (e) {
+                console.error('❌ Error formatting time:', e, 'Input:', timestampStr);
+                return `<span title="${timestampStr}">시간 오류</span>`;
+            }
+        }
 
-      if (result.ok) {
-        authToken = result.token;
-        currentUser = result.user;
-        localStorage.setItem('auth_token', authToken);
-        closeLoginModal();
-        updateUIForLoggedIn();
-        renderAppDetail();  // 실행 버튼 상태 갱신
-      } else {
-        const msg = {
-          'NOT_FOUND': '존재하지 않는 계정입니다.',
-          'BAD_PASSWORD': '비밀번호가 일치하지 않습니다.',
-          'ACCOUNT_DISABLED': '비활성화된 계정입니다.',
-          'NETWORK_ERROR': '서버에 연결할 수 없습니다.'
-        }[result.reason] || '로그인에 실패했습니다.';
-        errorEl.textContent = msg;
-        errorEl.classList.remove('hidden');
-      }
-    }
+        // =====================================================================
+        // 데이터 로드 함수
+        // =====================================================================
+        async function loadApps() {
+            // 1. 캐시된 데이터가 있으면 먼저 보여줌 (즉시 렌더링)
+            const cachedApps = localStorage.getItem('launcher_apps_cache');
+            if (cachedApps) {
+                APPS = JSON.parse(cachedApps);
+                renderSidebar();
+                console.log('⚡ Loaded apps from cache');
+            }
 
-    async function handleLogout() {
-      await callAPI('logout', { token: authToken });
-      authToken = null;
-      currentUser = null;
-      localStorage.removeItem('auth_token');
-      updateUIForLoggedOut();
-      renderAppDetail();  // 실행 버튼 상태 갱신
-    }
+            try {
+                // 2. 백그라운드에서 최신 데이터 요청
+                const result = await callAPI('getApps');
+                if (result.ok && result.apps) {
+                    // 데이터가 변경되었을 때만 UI 갱신 (선택 사항)
+                    if (JSON.stringify(APPS) !== JSON.stringify(result.apps)) {
+                        APPS = result.apps;
+                        renderSidebar();
+                        // 3. 최신 데이터 캐시에 저장
+                        localStorage.setItem('launcher_apps_cache', JSON.stringify(APPS));
+                        console.log('✅ Apps updated from server');
 
-    // =====================================================================
-    // UI 업데이트
-    // =====================================================================
-    function updateUIForLoggedIn() {
-      document.getElementById('headerLoginBtn').classList.add('hidden');
-      document.getElementById('userInfoArea').classList.remove('hidden');
-      document.getElementById('logoutBtn').classList.remove('hidden');
-      
-      document.getElementById('userName').textContent = currentUser.display_name;
-      document.getElementById('userAvatar').textContent = currentUser.display_name.charAt(0);
-      
-      if (currentUser.is_admin) {
-        document.getElementById('adminBadge').classList.remove('hidden');
-        document.getElementById('adminSection').classList.remove('hidden');
-        renderAdminMenu();
-      } else {
-        document.getElementById('adminBadge').classList.add('hidden');
-        document.getElementById('adminSection').classList.add('hidden');
-      }
-    }
+                        // 현재 보고 있는 앱이 업데이트 되었다면 상세 내용도 갱신
+                        if (selectedApp) {
+                            const updated = APPS.find(a => a.id === selectedApp.id);
+                            if (updated) { selectedApp = updated; renderAppDetail(); }
+                        }
+                    }
+                    appsLoaded = true;
+                }
+            } catch (e) {
+                console.error('❌ Error fetching apps:', e);
+                // 에러 나도 캐시된 데이터가 있으니 빈 화면은 아님
+            }
+        }
 
-    function updateUIForLoggedOut() {
-      document.getElementById('headerLoginBtn').classList.remove('hidden');
-      document.getElementById('userInfoArea').classList.add('hidden');
-      document.getElementById('logoutBtn').classList.add('hidden');
-      document.getElementById('adminSection').classList.add('hidden');
-    }
+        async function loadNotices() {
+            // 1. 캐시 로드
+            const cachedNotices = localStorage.getItem('launcher_notices_cache');
+            if (cachedNotices) {
+                NEWS = JSON.parse(cachedNotices);
+                if (currentTab === 'notice') renderNotice();
+            }
 
-    // =====================================================================
-    // 사이드바 렌더링
-    // =====================================================================
-    function renderSidebar() {
-      const list = document.getElementById('appList');
-      
-      list.innerHTML = APPS.map(app => `
-        <div class="app-item ${app.id === selectedApp?.id ? 'active' : ''}" 
-             onclick="selectApp('${app.id}')" data-id="${app.id}">
-          <div class="app-icon" style="background: ${app.iconBg}">${app.icon}</div>
-          <div class="app-info">
-            <div class="app-name">${app.name}</div>
-            <span class="app-tag ${app.tag}">${app.tagLabel}</span>
-          </div>
+            try {
+                // 2. 서버 요청
+                const includeHidden = currentUser?.is_admin || false;
+                const result = await callAPI('getNotices', { includeHidden });
+
+                if (result.ok && result.notices) {
+                    NEWS = result.notices;
+                    localStorage.setItem('launcher_notices_cache', JSON.stringify(NEWS));
+
+                    if (currentTab === 'notice') renderNotice();
+                    noticesLoaded = true;
+                }
+            } catch (e) {
+                console.error('❌ Error fetching notices:', e);
+            }
+        }
+
+        async function refreshApps() {
+            await loadApps();
+            renderSidebar();
+            if (selectedApp) {
+                const updated = APPS.find(a => a.id === selectedApp.id);
+                if (updated) {
+                    selectedApp = updated;
+                    renderAppDetail();
+                } else if (APPS.length > 0) {
+                    selectApp(APPS[0].id);
+                }
+            }
+        }
+
+        async function refreshNotices() {
+            await loadNotices();
+            if (currentTab === 'notice') {
+                renderNotice();
+            }
+        }
+
+        function showLoadingState() {
+            document.getElementById('contentArea').innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-muted);">
+            <div class="spinner" style="width: 50px; height: 50px; margin-bottom: 20px;"></div>
+            <div style="font-size: 16px;">데이터를 불러오는 중...</div>
         </div>
-      `).join('');
-    }
+    `;
+        }
 
-    function renderAdminMenu() {
-      document.getElementById('adminMenu').innerHTML = `
-        <div class="app-item" onclick="showAdminUsers()" data-id="admin-users">
-          <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)">👥</div>
-          <div class="app-info">
-            <div class="app-name">사용자 관리</div>
-          </div>
+        async function init() {
+            loadTheme();
+            // showLoadingState(); // 캐시를 쓰면 로딩 화면이 필요 없을 수도 있음
+
+            // 1. 캐시 데이터로 즉시 렌더링
+            const cachedApps = localStorage.getItem('launcher_apps_cache');
+            if (cachedApps) { APPS = JSON.parse(cachedApps); renderSidebar(); }
+
+            checkSession(); // 세션 체크 (비동기)
+
+            // 2. 통합 데이터 요청 (네트워크 비용 절감)
+            try {
+                const includeHidden = localStorage.getItem('auth_token') ? true : false; // 대략적인 권한 추측
+                const result = await callAPI('getInitData', { includeHidden });
+
+                if (result.ok) {
+                    APPS = result.apps || [];
+                    NEWS = result.notices || [];
+
+                    // 캐시 업데이트
+                    localStorage.setItem('launcher_apps_cache', JSON.stringify(APPS));
+                    localStorage.setItem('launcher_notices_cache', JSON.stringify(NEWS));
+
+                    renderSidebar();
+                    if (currentTab === 'notice') renderNotice();
+
+                    // 앱 자동 선택 로직
+                    if (!selectedApp && APPS.length > 0) {
+                        selectApp(APPS[0].id);
+                    }
+                }
+            } catch (e) {
+                console.error('Init Load Error:', e);
+            }
+        }
+
+        function showEmptyState() {
+            document.getElementById('contentArea').innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-muted);">
+            <div style="font-size: 64px; margin-bottom: 20px;">📭</div>
+            <div style="font-size: 20px; margin-bottom: 8px; color: var(--text);">등록된 앱이 없습니다</div>
+            <div style="font-size: 14px; margin-bottom: 24px;">관리자에게 문의해보세요</div>
+            <button class="btn btn-primary" onclick="openLoginModal()">🔑 로그인</button>
         </div>
-        <div class="app-item" onclick="showAdminLogs()" data-id="admin-logs">
-          <div class="app-icon" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%)">📋</div>
-          <div class="app-info">
-            <div class="app-name">접속 로그</div>
-          </div>
-        </div>
-      `;
-    }
+    `;
+        }
 
-    // =====================================================================
-    // 탭 전환
-    // =====================================================================
-    function showTab(tab) {
-      currentTab = tab;
-      
-      document.querySelectorAll('.header-nav .nav-link').forEach(el => {
-        el.classList.toggle('active', el.textContent.includes(tab === 'apps' ? '애플리케이션' : '공지'));
-      });
-      
-      if (tab === 'apps') {
-        renderAppDetail();
-      } else if (tab === 'notice') {
-        renderNotice();
-      }
-    }
+        function hideLoadingState() {
+            // renderAppDetail이나 다른 함수가 덮어씀
+        }
 
-    // =====================================================================
-    // 앱 선택 & 상세
-    // =====================================================================
-    function selectApp(id) {
-      selectedApp = APPS.find(a => a.id === id);
-      if (!selectedApp) return;
+        function toggleTheme() {
+            const html = document.documentElement;
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('launcher-theme', newTheme);
+            updateThemeIcon();
+        }
 
-      currentTab = 'apps';
-      
-      document.querySelectorAll('.app-item').forEach(el => {
-        el.classList.toggle('active', el.dataset.id === id);
-      });
-      
-      document.querySelectorAll('.header-nav .nav-link').forEach(el => {
-        el.classList.toggle('active', el.textContent.includes('애플리케이션'));
-      });
-      
-      renderAppDetail();
-    }
+        function loadTheme() {
+            const saved = localStorage.getItem('launcher-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+            updateThemeIcon();
+        }
 
-    function renderAppDetail() {
-      const app = selectedApp;
-      const isLoggedIn = !!currentUser;
-      const hasPermission = isLoggedIn && (currentUser.is_admin || currentUser.permissions?.[app.id] || currentUser.permissions?._all);
-      
-      let launchHint = '';
-      let launchBtnDisabled = true;
-      
-      if (!isLoggedIn) {
-        launchHint = '로그인 후 이용 가능합니다';
-      } else if (!hasPermission) {
-        launchHint = '🔒 이 앱에 대한 접근 권한이 없습니다';
-      } else {
-        launchHint = `<span class="logged-in">✓ ${currentUser.display_name}님, 실행 가능합니다</span>`;
-        launchBtnDisabled = false;
-      }
+        function updateThemeIcon() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
+        }
 
-      document.getElementById('contentArea').innerHTML = `
-        <!-- 앱 헤더 -->
-        <div class="app-header">
-          <div class="app-header-icon" style="background: ${app.iconBg}">${app.icon}</div>
-          <div class="app-header-info">
-            <h1 class="app-header-title">
-              ${app.name}
-              <span class="app-tag ${app.tag}">${app.tagLabel}</span>
-            </h1>
-            <p class="app-header-desc">${app.desc}</p>
-            <div class="app-meta">
-              <span class="app-meta-item">📦 ${app.version}</span>
-              <span class="app-meta-item">👤 ${app.author}</span>
-              <span class="app-meta-item">📁 ${app.category}</span>
-              <span class="app-meta-item">🕐 ${app.updated}</span>
-            </div>
-          </div>
-        </div>
+        async function callAPI(action, data = {}) {
+            try {
+                // ✅ Electron API 사용
+                if (window.electronAPI) {
+                    return await window.electronAPI.callAPI(action, data);
+                }
 
-        <!-- 실행 섹션 -->
-        <div class="launch-section">
-          <div class="launch-row">
-            <div class="launch-info">
-              <div class="launch-title">앱 실행</div>
-              <div class="launch-hint">${launchHint}</div>
-            </div>
-            <button class="btn btn-primary btn-lg" ${launchBtnDisabled ? 'disabled' : ''} onclick="${isLoggedIn ? 'launchApp()' : 'openLoginModal()'}">
-              ${isLoggedIn ? '▶ 실행하기' : '🔑 로그인하고 실행'}
-            </button>
-          </div>
-        </div>
+                // 폴백: 브라우저 환경 (개발용)
+                const res = await fetch('https://script.google.com/macros/s/AKfycbwmjjNZmsyX7YlyamQb_Wk3gTS2aw4JIXZceocJ2etGcK-CtA3jHJCH4GjXYo9cx_EU/exec', {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action, ...data })
+                });
+                return await res.json();
+            } catch (e) {
+                console.error('API Error:', e);
+                return { ok: false, reason: 'NETWORK_ERROR' };
+            }
+        }
 
-        <!-- 주요 기능 -->
-        <div class="features-section">
-          <h2 class="section-title">✨ 주요 기능</h2>
-          <div class="features-grid">
-            ${app.features.map(f => `
-              <div class="feature-card">
-                <div class="feature-icon">${f.icon}</div>
-                <div class="feature-title">${f.title}</div>
-                <div class="feature-desc">${f.desc}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
+        async function checkSession() {
+            const savedToken = localStorage.getItem('auth_token');
+            if (savedToken) {
+                const result = await callAPI('verify', { token: savedToken });
+                if (result.ok) {
+                    authToken = savedToken;
+                    currentUser = result.user;
+                    updateUIForLoggedIn();
+                    return;
+                } else {
+                    localStorage.removeItem('auth_token');
+                }
+            }
+            updateUIForLoggedOut();
+        }
 
-        <!-- 사용 가이드 -->
-        <div class="guide-section">
-          <h2 class="section-title">📖 사용 가이드</h2>
-          <div class="guide-steps">
-            ${app.guide.map((step, i) => `
-              <div class="guide-step">
-                <div class="step-number">${i + 1}</div>
-                <div class="step-content">
-                  <div class="step-title">${step.title}</div>
-                  <div class="step-desc">${step.desc}</div>
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.add('show');
+            document.getElementById('loginError').classList.add('hidden');
+
+            // 저장된 아이디 불러오기
+            const savedId = localStorage.getItem('saved_login_id');
+            if (savedId) {
+                document.getElementById('loginId').value = savedId;
+                document.getElementById('rememberIdCheck').checked = true;
+                document.getElementById('loginPw').focus();  // 비밀번호로 포커스
+            } else {
+                document.getElementById('loginId').value = '';
+                document.getElementById('rememberIdCheck').checked = false;
+                document.getElementById('loginId').focus();  // 아이디로 포커스
+            }
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('show');
+            document.getElementById('loginId').value = '';
+            document.getElementById('loginPw').value = '';
+        }
+
+        async function handleLogin() {
+            const id = document.getElementById('loginId').value.trim();
+            const pw = document.getElementById('loginPw').value;
+            const errorEl = document.getElementById('loginError');
+            const btn = document.getElementById('loginSubmitBtn');
+
+            if (!id || !pw) {
+                errorEl.textContent = '아이디와 비밀번호를 입력하세요.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '로그인 중...';
+
+            const result = await callAPI('login', { userId: id, password: pw });
+
+            btn.disabled = false;
+            btn.textContent = '로그인';
+
+            if (result.ok) {
+                authToken = result.token;
+                currentUser = result.user;
+                localStorage.setItem('auth_token', authToken);
+                closeLoginModal();
+                updateUIForLoggedIn();
+                renderAppDetail();
+            } else {
+                const msg = {
+                    'NOT_FOUND': '존재하지 않는 계정입니다.',
+                    'BAD_PASSWORD': '비밀번호가 일치하지 않습니다.',
+                    'ACCOUNT_DISABLED': '비활성화된 계정입니다.',
+                    'NETWORK_ERROR': '서버에 연결할 수 없습니다.'
+                }[result.reason] || '로그인에 실패했습니다.';
+                errorEl.textContent = msg;
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        // 로그아웃 확인 모달
+        function openLogoutModal() {
+            document.getElementById('logoutModal').classList.add('show');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.remove('show');
+        }
+
+        async function confirmLogout() {
+            const btn = document.getElementById('logoutConfirmBtn');
+            btn.disabled = true;
+            btn.textContent = '로그아웃 중...';
+
+            await callAPI('logout', { token: authToken });
+
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('auth_token');
+
+            btn.disabled = false;
+            btn.textContent = '네, 로그아웃';
+
+            closeLogoutModal();
+            updateUIForLoggedOut();
+            renderAppDetail();
+        }
+
+        function updateUIForLoggedIn() {
+            document.getElementById('headerLoginBtn').classList.add('hidden');
+            document.getElementById('userInfoArea').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('userName').textContent = currentUser.display_name;
+            document.getElementById('userAvatar').textContent = currentUser.display_name.charAt(0);
+
+            if (currentUser.is_admin) {
+                document.getElementById('adminBadge').classList.remove('hidden');
+                document.getElementById('adminSection').classList.remove('hidden');
+                renderAdminMenu();
+            } else {
+                document.getElementById('adminBadge').classList.add('hidden');
+                document.getElementById('adminSection').classList.add('hidden');
+            }
+        }
+
+        function updateUIForLoggedOut() {
+            document.getElementById('headerLoginBtn').classList.remove('hidden');
+            document.getElementById('userInfoArea').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('adminSection').classList.add('hidden');
+        }
+
+        function renderSidebar() {
+            const appListEl = document.getElementById('appList');
+
+            if (!APPS || APPS.length === 0) {
+                appListEl.innerHTML = `
+                            <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                                    <div style="margin-bottom: 8px;">📭</div>
+                                    <div>등록된 앱이 없습니다</div>
+                                </div>
+                            `;
+                return;
+            }
+
+            appListEl.innerHTML = APPS.map(app => `
+                            <div class="app-item ${app.id === selectedApp?.id ? 'active' : ''}" onclick="selectApp('${app.id}')" data-id="${app.id}">
+                                <div class="app-icon" style="background: ${app.iconBg || '#6366f1'}; display: flex; align-items: center; justify-content: center;">${renderIcon(app.icon, '24px')}</div>
+                                <div class="app-info">
+                                    <div class="app-name">${app.name}</div>
+                                    ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || ''}</span>` : ''}
+                                </div>
+                            </div>
+                            `).join('');
+        }
+
+        function renderAdminMenu() {
+            document.getElementById('adminMenu').innerHTML = `
+                                    <div class="app-item" onclick="showAdminApps()" data-id="admin-apps">
+                                      <div class="app-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%)">📱</div>
+                                      <div class="app-info"><div class="app-name">앱 관리</div></div>
+                                    </div>
+                                    <div class="app-item" onclick="showAdminNotices()" data-id="admin-notices">
+                                      <div class="app-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)">📢</div>
+                                      <div class="app-info"><div class="app-name">공지사항 관리</div></div>
+                                    </div>
+                                    <div class="app-item" onclick="showAdminUsers()" data-id="admin-users">
+                                      <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)">👥</div>
+                                      <div class="app-info"><div class="app-name">사용자 관리</div></div>
+                                    </div>
+                                    <div class="app-item" onclick="showAdminLogs()" data-id="admin-logs">
+                                      <div class="app-icon" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%)">📋</div>
+                                      <div class="app-info"><div class="app-name">접속 로그</div></div>
+                                    </div>
+                                  `;
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.header-nav .nav-link').forEach(el => {
+                el.classList.toggle('active', el.dataset.tab === tab);
+            });
+            if (tab === 'apps') renderAppDetail();
+            else if (tab === 'notice') renderNotice();
+        }
+
+        function selectApp(id) {
+            if (!APPS || APPS.length === 0) {
+                console.warn('⚠️ No apps available');
+                return;
+            }
+
+            selectedApp = APPS.find(a => a.id === id);
+            if (!selectedApp) {
+                console.warn('⚠️ App not found:', id);
+                return;
+            }
+
+            currentTab = 'apps';
+            document.querySelectorAll('.app-item').forEach(el => el.classList.toggle('active', el.dataset.id === id));
+            document.querySelectorAll('.header-nav .nav-link').forEach(el => el.classList.toggle('active', el.dataset.tab === 'apps'));
+            renderAppDetail();
+        }
+
+                // 카테고리별 아이콘 매핑 함수
+        function getCategoryIcon(category) {
+            const iconMap = {
+                '음성 인식': '🎙️',
+                '품질 검수': '✅',
+                '오디오 편집': '🎚️',
+                '스크립트': '📝',
+                '데이터 분석': '📊',
+                '유틸리티': '🛠️',
+                '기타': '📦'
+            };
+            // 매핑된 아이콘이 없으면 기본 폴더(📁) 아이콘 반환
+            return iconMap[category] || '📁';
+        }
+
+        function renderAppDetail() {
+            if (!selectedApp) {
+                document.getElementById('contentArea').innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-muted);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                        <div style="font-size: 18px; margin-bottom: 8px;">앱을 선택해주세요</div>
+                        <div style="font-size: 14px;">좌측 메뉴에서 실행할 앱을 선택하세요</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const app = selectedApp;
+            const isLoggedIn = !!currentUser;
+            const hasPermission = isLoggedIn && (currentUser.is_admin || currentUser.permissions?.[app.id] || currentUser.permissions?._all);
+
+            let launchHint = '';
+            let launchBtnDisabled = true;
+
+            if (!isLoggedIn) {
+                launchHint = '로그인 후 이용 가능합니다';
+            } else if (!hasPermission) {
+                launchHint = '🔒 이 앱에 대한 접근 권한이 없습니다';
+            } else {
+                launchHint = `<span class="logged-in">✓ ${currentUser.display_name}님, 실행 가능합니다</span>`;
+                launchBtnDisabled = false;
+            }
+
+            // 다운로드 섹션 (로그인 + 권한 필요)
+            let downloadHtml = '';
+            if (app.downloads && app.downloads.length > 0) {
+                const canDownload = isLoggedIn && hasPermission;
+
+                downloadHtml = `
+                    <div class="download-section">
+                        <h2 class="section-title">📥 다운로드</h2>
+                        ${app.downloads.map(dl => `
+                            <div class="download-card">
+                                <div class="download-icon">${dl.icon}</div>
+                                <div class="download-info">
+                                    <div class="download-title">${dl.name}</div>
+                                    <div class="download-desc">${dl.desc}</div>
+                                    <div class="download-meta">
+                                        <span>💻 ${dl.platform}</span>
+                                        <span>📦 ${dl.version}</span>
+                                        <span>📁 ${dl.url ? '파일 있음' : '준비 중'}</span>
+                                    </div>
+                                    ${!canDownload ? '<div class="download-login-hint">⚠️ 로그인 후 다운로드 가능합니다</div>' : ''}
+                                </div>
+                                ${canDownload
+                        ? `<a href="${dl.url}" target="_blank" class="btn btn-primary btn-sm">다운로드</a>`
+                        : `<button class="btn btn-secondary btn-sm" disabled>🔒 다운로드</button>`
+                    }
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // ★ 여기서부터 백틱(`) 하나로 전체 HTML을 감쌉니다.
+            document.getElementById('contentArea').innerHTML = `
+                <div class="app-header">
+                    <div class="app-header-icon" style="background: ${app.iconBg}; display: flex; align-items: center; justify-content: center;">
+                        ${renderIcon(app.icon, '40px')}
+                    </div>
+                    <div class="app-header-info">
+                        <h1 class="app-header-title">
+                            ${app.name} 
+                            ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || ''}</span>` : ''}
+                        </h1>
+                        <p class="app-header-desc">${app.desc || ''}</p>
+                        <div class="app-meta">
+                            ${app.version ? `<span class="app-meta-item">📦 ${app.version}</span>` : ''}
+                            ${app.author ? `<span class="app-meta-item">👤 ${app.author}</span>` : ''}
+                            ${app.category ? `<span class="app-meta-item">${getCategoryIcon(app.category)} ${app.category}</span>` : ''}
+                            ${app.updated ? `<span class="app-meta-item">🕐 ${app.updated}</span>` : ''}
+                        </div>
+                    </div>
                 </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
 
-    // =====================================================================
-    // 공지사항
-    // =====================================================================
-    function renderNotice() {
-      document.querySelectorAll('.app-item').forEach(el => el.classList.remove('active'));
-      
-      document.getElementById('contentArea').innerHTML = `
-        <div class="admin-header">
-          <h1 class="admin-title">📢 공지사항</h1>
-          <p class="admin-subtitle">Preman Launcher의 새로운 소식과 업데이트를 확인하세요.</p>
-        </div>
+                <div class="launch-section">
+                    <div class="launch-row">
+                        <div class="launch-info">
+                            <div class="launch-title">앱 실행</div>
+                            <div class="launch-hint">${launchHint}</div>
+                        </div>
+                        <button class="btn btn-primary btn-lg" ${launchBtnDisabled ? 'disabled' : ''} onclick="${isLoggedIn ? 'launchApp()' : 'openLoginModal()'}">
+                            ${isLoggedIn ? '▶ 실행하기' : '🔑 로그인 후 실행'}
+                        </button>
+                    </div>
+                </div>
+
+                ${downloadHtml}
+
+                <div class="features-section">
+                    <h2 class="section-title">✨ 주요 기능</h2>
+                    <div class="features-grid">
+                        ${(app.features || []).map(f => `
+                            <div class="feature-card">
+                                <div class="feature-icon">${f.icon}</div>
+                                <div class="feature-title">${f.title}</div>
+                                <div class="feature-desc">${(f.desc || '').replace(/\n/g, '<br>')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="guide-section">
+                    <h2 class="section-title">📖 사용 가이드</h2>
+                    <div class="guide-steps">
+                        ${(app.guide || []).map((step, i) => `
+                            <div class="guide-step">
+                                <div class="step-number">${i + 1}</div>
+                                <div class="step-content">
+                                    <div class="step-title">${step.title}</div>
+                                    <div class="step-desc">${(step.desc || '').replace(/\n/g, '<br>')}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderNotice() {
+            document.querySelectorAll('.app-item').forEach(el => el.classList.remove('active'));
+
+            // 안전한 DOM 생성으로 변경
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+
+            const header = document.createElement('div');
+            header.className = 'admin-header';
+
+            const title = document.createElement('h1');
+            title.className = 'admin-title';
+            title.textContent = '📢 공지사항';
+            header.appendChild(title);
+
+            const subtitle = document.createElement('p');
+            subtitle.className = 'admin-subtitle';
+            subtitle.textContent = 'Preman Launcher의 새로운 소식과 업데이트를 확인하세요.';
+            header.appendChild(subtitle);
+
+            contentArea.appendChild(header);
+
+            const noticeSection = document.createElement('div');
+            noticeSection.className = 'notice-section';
+
+            const noticeList = document.createElement('div');
+            noticeList.className = 'notice-list';
+
+            NEWS.forEach((n, idx) => {
+                const item = document.createElement('div');
+                item.className = 'notice-item';
+                item.setAttribute('data-idx', idx);
+
+                const noticeHeader = document.createElement('div');
+                noticeHeader.className = 'notice-header';
+                noticeHeader.onclick = () => toggleNotice(idx);
+
+                const headerLeft = document.createElement('div');
+                headerLeft.className = 'notice-header-left';
+
+                const date = document.createElement('div');
+                date.className = 'notice-date';
+                date.textContent = n.date;
+                headerLeft.appendChild(date);
+
+                const noticeTitle = document.createElement('div');
+                noticeTitle.className = 'notice-title';
+
+                const tag = document.createElement('span');
+                tag.className = `notice-tag ${n.tag}`;
+                tag.textContent = n.tag === 'update' ? '업데이트' : n.tag === 'notice' ? '공지' : '이벤트';
+                noticeTitle.appendChild(tag);
+
+                const titleText = document.createTextNode(' ' + n.title);
+                noticeTitle.appendChild(titleText);
+                headerLeft.appendChild(noticeTitle);
+
+                noticeHeader.appendChild(headerLeft);
+
+                const arrow = document.createElement('span');
+                arrow.className = 'notice-arrow';
+                arrow.textContent = '▼';
+                noticeHeader.appendChild(arrow);
+
+                item.appendChild(noticeHeader);
+
+                // 공지 내용 (HTML은 서버에서 온 것이므로 주의)
+                // 이상적으로는 마크다운이나 plain text로 변경하되, 현재는 기존 데이터 유지
+                const content = document.createElement('div');
+                content.className = 'notice-content';
+
+                const inner = document.createElement('div');
+                inner.className = 'notice-content-inner';
+                // 서버에서 온 HTML이 신뢰할 수 있는 경우만 사용
+                inner.innerHTML = (n.content || '').replace(/\n/g, '<br>');
+                content.appendChild(inner);
+
+                item.appendChild(content);
+                noticeList.appendChild(item);
+            });
+
+            noticeSection.appendChild(noticeList);
+            contentArea.appendChild(noticeSection);
+        }
+
+        function toggleNotice(idx) {
+            const item = document.querySelector(`.notice-item[data-idx="${idx}"]`);
+            if (item) item.classList.toggle('open');
+        }
+
+        async function showAdminUsers() {
+            document.querySelectorAll('.app-item').forEach(el => el.classList.toggle('active', el.dataset.id === 'admin-users'));
+
+            document.getElementById('contentArea').innerHTML = `
+                            <div class="admin-header">
+                              <h1 class="admin-title">👥 사용자 관리</h1>
+                              <p class="admin-subtitle">등록된 사용자와 사용량을 관리합니다.</p>
+                            </div>
+                            <div class="stats-grid" id="statsGrid">
+                              <div class="stat-card"><div class="stat-value">-</div><div class="stat-label">로딩 중...</div></div>
+                            </div>
+                            <div class="table-section">
+                              <div class="table-header">
+                                <span>사용자 목록</span>
+                                <button class="btn btn-secondary btn-sm" onclick="showAdminUsers()">🔄 새로고침</button>
+                              </div>
+                              <div class="table-scroll">
+                                <table class="data-table">
+                                  <thead><tr><th>사용자</th><th>역할</th><th>상태</th><th>사용량</th><th>잔여</th><th>관리</th></tr></thead>
+                                  <tbody id="usersTableBody"><tr><td colspan="6">로딩 중...</td></tr></tbody>
+                                </table>
+                              </div>
+                            </div>
+                          `;
+
+            const result = await callAPI('getUsageStats', { token: authToken });
+
+            if (result.ok && result.users) {
+                allUsersData = result.users;
+                const users = result.users;
+                const total = users.length;
+                const active = users.filter(u => u.status === 'ACTIVE').length;
+                const totalUsed = users.reduce((sum, u) => sum + (u.token_used || 0), 0);
+
+                document.getElementById('statsGrid').innerHTML = `
+                              <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">전체 사용자</div></div>
+                              <div class="stat-card"><div class="stat-value">${active}</div><div class="stat-label">활성 사용자</div></div>
+                              <div class="stat-card"><div class="stat-value">${totalUsed.toLocaleString()}</div><div class="stat-label">총 사용량</div></div>
+                            `;
+
+                document.getElementById('usersTableBody').innerHTML = users.map(u => {
+                    const tokenUsed = u.token_used || 0;
+                    const tokenLimit = u.token_limit || 0;
+                    const tokenRemaining = u.token_remaining ?? (tokenLimit - tokenUsed);
+                    const pct = u.usage_percent || 0;
+                    const barClass = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : 'ok';
+                    const unlimited = u.role === 'ADMIN' || tokenLimit < 0;
+
+                    return `
+                                <tr>
+                                  <td><strong>${u.display_name || u.user_id}</strong><br><span style="font-size:11px;color:var(--text-muted)">${u.user_id}</span></td>
+                                  <td>${u.role || 'USER'}</td>
+                                  <td><span class="status-badge ${(u.status === 'ACTIVE') ? 'active' : 'inactive'}">${u.status || 'UNKNOWN'}</span></td>
+                                  <td>${unlimited ? '∞' : `<div style="display:flex;align-items:center;gap:8px"><div class="usage-bar"><div class="usage-fill ${barClass}" style="width:${pct}%"></div></div>${tokenUsed.toLocaleString()}</div>`}</td>
+                                  <td>${unlimited ? '무제한' : tokenRemaining.toLocaleString()}</td>
+                                  <td><div class="action-btns"><button class="btn btn-secondary btn-xs" onclick="openEditUserModal('${u.user_id}')">✏️ 편집</button></div></td>
+                                </tr>
+                              `;
+                }).join('');
+            } else {
+                document.getElementById('usersTableBody').innerHTML = `<tr><td colspan="6">데이터를 불러올 수 없습니다. ${result.reason || ''}</td></tr>`;
+            }
+        }
+
+        function openEditUserModal(userId) {
+            const user = allUsersData.find(u => u.user_id === userId);
+            if (!user) return;
+
+            editingUser = user;
+            document.getElementById('editUserId').value = user.user_id;
+            document.getElementById('editUserSubtitle').textContent = `${user.user_id} 정보 수정`;
+            document.getElementById('editDisplayName').value = user.display_name || '';
+            document.getElementById('editRole').value = user.role || 'USER';
+            document.getElementById('editStatus').value = user.status || 'ACTIVE';
+            document.getElementById('editTokenLimit').value = user.token_limit ?? 5000;
+            document.getElementById('editTokenUsed').value = user.token_used ?? 0;
+            document.getElementById('editNewPassword').value = '';
+
+            const permsContainer = document.getElementById('editPermissions');
+            const userPerms = user.permissions || {};
+            permsContainer.innerHTML = APPS.map(app => `
+                            <label class="form-checkbox">
+                              <input type="checkbox" name="perm_${app.id}" ${userPerms[app.id] || user.role === 'ADMIN' ? 'checked' : ''}>
+                              ${app.icon} ${app.name}
+                            </label>
+                          `).join('');
+
+            document.getElementById('editUserError').classList.add('hidden');
+            document.getElementById('editUserSuccess').classList.add('hidden');
+            document.getElementById('editUserModal').classList.add('show');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('show');
+            editingUser = null;
+        }
+
+        async function saveUserChanges() {
+            const userId = document.getElementById('editUserId').value;
+            const status = document.getElementById('editStatus').value;
+            const tokenLimit = parseInt(document.getElementById('editTokenLimit').value) || 5000;
+            const tokenUsed = parseInt(document.getElementById('editTokenUsed').value) || 0;
+            const newPassword = document.getElementById('editNewPassword').value.trim();
+
+            const permissions = {};
+            APPS.forEach(app => {
+                const checkbox = document.querySelector(`input[name="perm_${app.id}"]`);
+                if (checkbox) permissions[app.id] = checkbox.checked ? 'Y' : 'N';
+            });
+
+            const errorEl = document.getElementById('editUserError');
+            const successEl = document.getElementById('editUserSuccess');
+            errorEl.classList.add('hidden');
+            successEl.classList.add('hidden');
+
+            const result = await callAPI('updateUser', {
+                token: authToken,
+                targetUserId: userId,
+                status: status,
+                tokenLimit: tokenLimit,
+                tokenUsed: tokenUsed,
+                permissions: permissions
+            });
+
+            if (!result.ok) {
+                errorEl.textContent = result.reason || '저장에 실패했습니다.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (newPassword) {
+                const pwResult = await callAPI('adminSetPassword', {
+                    token: authToken,
+                    targetUserId: userId,
+                    newPassword: newPassword
+                });
+
+                if (!pwResult.ok) {
+                    errorEl.textContent = '비밀번호 변경에 실패했습니다: ' + (pwResult.reason || '');
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+            }
+
+            successEl.textContent = '저장되었습니다!';
+            successEl.classList.remove('hidden');
+
+            setTimeout(() => {
+                closeEditUserModal();
+                showAdminUsers();
+            }, 1000);
+        }
+
+        async function showAdminLogs() {
+            document.querySelectorAll('.app-item').forEach(el => el.classList.toggle('active', el.dataset.id === 'admin-logs'));
+
+            document.getElementById('contentArea').innerHTML = `
+                            <div class="admin-header">
+                              <h1 class="admin-title">📋 접속 로그</h1>
+                              <p class="admin-subtitle">사용자들의 최근 접속 기록입니다.</p>
+                            </div>
+                            <div class="table-section">
+                              <div class="table-header">
+                                <span>최근 접속 기록</span>
+                                <button class="btn btn-secondary btn-sm" onclick="showAdminLogs()">🔄 새로고침</button>
+                              </div>
+                              <div class="table-scroll">
+                                <table class="data-table">
+                                  <thead><tr><th>최근 접속</th><th>사용자</th><th>액션</th><th>앱</th></tr></thead>
+                                  <tbody id="logsTableBody"><tr><td colspan="4">로딩 중...</td></tr></tbody>
+                                </table>
+                              </div>
+                            </div>
+                          `;
+
+            const result = await callAPI('getAccessLogs', { token: authToken, limit: 100 });
+
+
+            // showAdminLogs() 함수 내의 로그 테이블 렌더링 부분 교체:
+            if (result.ok) {
+                document.getElementById('logsTableBody').innerHTML = result.logs && result.logs.length
+                    ? result.logs.map(log => {
+                        const timeStr = formatLogTimeWithTooltip(log.timestamp);
+                        return `<tr><td>${timeStr}</td><td>${log.user_id}</td><td>${log.action}</td><td>${log.app_id || '-'}</td></tr>`;
+                    }).join('')
+                    : '<tr><td colspan="4">로그가 없습니다.</td></tr>';
+            }
+        }
+
+        async function launchApp() {
+            if (!selectedApp || !authToken) return;
+
+            const app = selectedApp;
+
+            // 로딩 오버레이 표시
+            showAppLoading(app);
+
+            // 앱 실행 로그 기록
+            try {
+                await callAPI('logAppLaunch', { token: authToken, appId: app.id });
+            } catch (e) {
+                console.warn('Failed to log app launch:', e);
+            }
+
+            // 앱 뷰어 열기
+            openAppViewer(app.url, app.name, app.icon);
+        }
+
+        function showAppLoading(app) {
+            const overlay = document.getElementById('appLoadingOverlay');
+            const iconEl = document.getElementById('loadingAppIcon');
+            const nameEl = document.getElementById('loadingAppName');
+
+            iconEl.style.background = app.iconBg || '#6366f1';
+            iconEl.innerHTML = renderIcon(app.icon, '36px');
+            nameEl.textContent = app.name || '앱';
+
+            overlay.classList.remove('hidden');
+            overlay.style.display = 'flex';
+        }
+
+        function hideAppLoading() {
+            const overlay = document.getElementById('appLoadingOverlay');
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+        }
+
+        function closeAppViewer() {
+            document.getElementById('appViewer').classList.remove('show');
+            document.getElementById('contentFrame').src = '';
+            document.body.style.overflow = '';
+            hideAppLoading();
+        }
+
+        function openAppViewer(url, title, icon) {
+            document.getElementById('viewerTitle').textContent = title;
+            document.getElementById('viewerIcon').innerHTML = renderIcon(icon, '24px');
+            document.getElementById('iframeLoading').style.display = 'block';
+
+            const frame = document.getElementById('contentFrame');
+            frame.referrerPolicy = 'no-referrer';
+            frame.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-top-navigation');
+
+            if (authToken && currentUser) {
+                const payload = JSON.stringify({ token: authToken, user: currentUser });
+                const encodedPayload = btoa(unescape(encodeURIComponent(payload)));
+                const separator = url.includes('?') ? '&' : '?';
+                frame.src = `${url}${separator}launcher_data=${encodedPayload}`;
+            } else {
+                frame.src = url;
+            }
+
+            document.getElementById('appViewer').classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            frame.onload = () => {
+                hideLoading();
+                hideAppLoading();  // ← 추가: 로딩 오버레이 숨김
+            };
+
+            // 타임아웃 처리 (10초 후 강제로 로딩 숨김)
+            setTimeout(() => {
+                hideAppLoading();
+            }, 10000);
+        }
+
+        // =====================================================================
+        // 앱 관리 (Admin)
+        // =====================================================================
+        let editingApp = null;
+
+        function showAdminApps() {
+            selectedApp = null;
+            currentTab = 'admin-apps';
+            document.querySelectorAll('.app-item').forEach(el => el.classList.remove('active'));
+            document.querySelector('[data-id="admin-apps"]')?.classList.add('active');
+            renderAdminApps();
+        }
+
+        async function renderAdminApps() {
+            document.getElementById('contentArea').innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--text-muted);">
+                        <div class="spinner"></div>
+                        <span style="margin-left: 12px;">앱 목록 불러오는 중...</span>
+                    </div>
+                `;
+
+            await loadApps();
+
+            document.getElementById('contentArea').innerHTML = `
+                    <div class="admin-header">
+                        <h1 class="admin-title">📱 앱 관리</h1>
+                        <p class="admin-subtitle">등록된 앱을 관리하고 새 앱을 추가할 수 있습니다.</p>
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <button class="btn btn-primary" onclick="openAddAppModal()">
+                            <span style="margin-right: 6px;">➕</span> 새 앱 추가
+                        </button>
+                    </div>
+
+                    ${APPS.length === 0 ? `
+                        <div style="background: var(--card); border-radius: 12px; padding: 60px; text-align: center; border: 2px dashed var(--line);">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                            <div style="font-size: 18px; margin-bottom: 8px; color: var(--text);">등록된 앱이 없습니다</div>
+                            <div style="color: var(--text-muted); margin-bottom: 20px;">새 앱을 추가하여 시작하세요</div>
+                            <button class="btn btn-primary" onclick="openAddAppModal()">➕ 첫 번째 앱 추가</button>
+                        </div>
+                    ` : `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+                            ${APPS.map((app, idx) => `
+                                <div class="admin-app-card" style="background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--line); transition: all 0.2s;">
+                                    <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                                        <div class="app-icon" style="background: ${app.iconBg || '#6366f1'}; width: 56px; height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">${renderIcon(app.icon, '28px')}</div>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                                <strong style="font-size: 16px;">${app.name}</strong>
+                                                ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || app.tag}</span>` : ''}
+                                            </div>
+                                            <div style="color: var(--text-muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${app.desc || '설명 없음'}</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; font-size: 12px; color: var(--text-muted);">
+                                        <div style="background: var(--bg); padding: 8px; border-radius: 6px; text-align: center;">
+                                            <div style="font-weight: 600; color: var(--text);">${app.id}</div>
+                                            <div>ID</div>
+                                        </div>
+                                        <div style="background: var(--bg); padding: 8px; border-radius: 6px; text-align: center;">
+                                            <div style="font-weight: 600; color: var(--text);">${app.version || '-'}</div>
+                                            <div>버전</div>
+                                        </div>
+                                        <div style="background: var(--bg); padding: 8px; border-radius: 6px; text-align: center;">
+                                            <div style="font-weight: 600; color: var(--text);">${app.category || '-'}</div>
+                                            <div>카테고리</div>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn btn-secondary btn-sm" onclick="openEditAppModal('${app.id}')" style="flex: 1;">
+                                            ✏️ 수정
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" onclick="previewApp('${app.id}')" style="flex: 1;">
+                                            👁️ 미리보기
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="confirmDeleteApp('${app.id}')" style="width: 44px;">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                `;
+        }
+
+        function previewApp(appId) {
+            const app = APPS.find(a => a.id === appId);
+            if (app) {
+                selectedApp = app;
+                showTab('apps');
+            }
+        }
+
+        function openAddAppModal() {
+            editingApp = null;
+            document.getElementById('appModalTitle').textContent = '새 앱 추가';
+            document.getElementById('appForm').reset();
+            document.getElementById('appIdInput').disabled = false;
+
+            // 동적 필드 초기화
+            document.getElementById('featuresContainer').innerHTML = '';
+            document.getElementById('guideContainer').innerHTML = '';
+            document.getElementById('downloadsContainer').innerHTML = '';
+
+            // 기본값 설정
+            document.getElementById('appAuthorInput').value = 'Premandata';
+            document.getElementById('appUpdatedInput').value = new Date().toISOString().split('T')[0].replace(/-/g, '.');
+
+            // 기본 기능 행 1개 추가
+            addFeatureRow();
+
+            document.getElementById('appModal').classList.add('show');
+        }
+
+        function openEditAppModal(appId) {
+            editingApp = APPS.find(a => a.id === appId);
+            if (!editingApp) return;
+
+            document.getElementById('appModalTitle').textContent = '앱 수정';
+            document.getElementById('appIdInput').value = editingApp.id;
+            document.getElementById('appIdInput').disabled = true;
+            document.getElementById('appNameInput').value = editingApp.name || '';
+            document.getElementById('appDescInput').value = editingApp.desc || '';
+            document.getElementById('appUrlInput').value = editingApp.url || '';
+            document.getElementById('appIconInput').value = editingApp.icon || '';
+            document.getElementById('appIconBgInput').value = editingApp.iconBg || 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
+            document.getElementById('appCategoryInput').value = editingApp.category || '';
+            document.getElementById('appVersionInput').value = editingApp.version || '';
+            document.getElementById('appTagInput').value = editingApp.tag || '';
+            document.getElementById('appTagLabelInput').value = editingApp.tagLabel || '';
+            document.getElementById('appAuthorInput').value = editingApp.author || 'Premandata';
+            document.getElementById('appUpdatedInput').value = editingApp.updated || '';
+
+            // 동적 필드 초기화 및 로드
+            document.getElementById('featuresContainer').innerHTML = '';
+            document.getElementById('guideContainer').innerHTML = '';
+            document.getElementById('downloadsContainer').innerHTML = '';
+
+            (editingApp.features || []).forEach(f => addFeatureRow(f));
+            (editingApp.guide || []).forEach(g => addGuideRow(g));
+            (editingApp.downloads || []).forEach(d => addDownloadRow(d));
+
+            document.getElementById('appModal').classList.add('show');
+        }
+
+        function closeAppModal() {
+            document.getElementById('appModal').classList.remove('show');
+            editingApp = null;
+        }
+
+        async function saveApp() {
+            const tagSelect = document.getElementById('appTagInput');
+            const selectedTag = tagSelect.value;
+            const tagLabels = { 'new': 'NEW', 'featured': 'FEATURED', 'beta': 'BETA', 'updated': 'UPDATED' };
+
+            const appData = {
+                id: document.getElementById('appIdInput').value.trim(),
+                name: document.getElementById('appNameInput').value.trim(),
+                desc: document.getElementById('appDescInput').value.trim(),
+                url: document.getElementById('appUrlInput').value.trim(),
+                icon: document.getElementById('appIconInput').value.trim() || '📱',
+                iconBg: document.getElementById('appIconBgInput').value.trim() || 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                category: document.getElementById('appCategoryInput').value.trim(),
+                version: document.getElementById('appVersionInput').value.trim() || 'v1.0.0',
+                tag: selectedTag,
+                tagLabel: document.getElementById('appTagLabelInput').value.trim() || tagLabels[selectedTag] || '',
+                author: document.getElementById('appAuthorInput')?.value.trim() || 'Premandata',
+                updated: document.getElementById('appUpdatedInput')?.value.trim() || new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+                features: collectFeatures(),
+                guide: collectGuide(),
+                downloads: collectDownloads()
+            };
+
+            if (!appData.id || !appData.name || !appData.url) {
+                alert('앱 ID, 이름, URL은 필수입니다.');
+                return;
+            }
+
+            const btn = document.getElementById('saveAppBtn');
+            btn.disabled = true;
+            btn.textContent = '저장 중...';
+
+            let result;
+            if (editingApp) {
+                result = await callAPI('updateApp', { token: authToken, appId: editingApp.id, appData });
+            } else {
+                result = await callAPI('addApp', { token: authToken, appData });
+            }
+
+            btn.disabled = false;
+            btn.textContent = '💾 저장';
+
+            if (result.ok) {
+                closeAppModal();
+                await refreshApps();
+                // 현재 탭이 admin이면 admin 화면 유지
+                if (currentTab === 'admin-apps') {
+                    renderAdminApps();
+                }
+            } else {
+                alert('저장 실패: ' + (result.reason || '알 수 없는 오류'));
+            }
+        }  
         
-        <div class="notice-section">
-          <div class="notice-list">
-            ${NEWS.map(n => `
-              <div class="notice-item">
-                <div class="notice-date">${n.date}</div>
-                <div class="notice-title">
-                  <span class="notice-tag ${n.tag}">${
-                    n.tag === 'update' ? '업데이트' : 
-                    n.tag === 'notice' ? '공지' : '이벤트'
-                  }</span>
-                  ${n.title}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
 
-    // =====================================================================
-    // Admin 화면
-    // =====================================================================
-    async function showAdminUsers() {
-      document.querySelectorAll('.app-item').forEach(el => {
-        el.classList.toggle('active', el.dataset.id === 'admin-users');
-      });
+        // =====================================================================
+        // 앱 폼 동적 필드 관리
+        // =====================================================================
+        function addFeatureRow(data = {}) {
+            const container = document.getElementById('featuresContainer');
+            const idx = container.children.length;
+            if (idx >= 4) {
+                alert('기능은 최대 4개까지 추가할 수 있습니다.');
+                return;
+            }
 
-      document.getElementById('contentArea').innerHTML = `
-        <div class="admin-header">
-          <h1 class="admin-title">👥 사용자 관리</h1>
-          <p class="admin-subtitle">등록된 사용자와 사용량을 관리합니다.</p>
-        </div>
-        <div class="stats-grid" id="statsGrid">
-          <div class="stat-card"><div class="stat-value">-</div><div class="stat-label">로딩 중...</div></div>
-        </div>
-        <div class="table-section">
-          <div class="table-header">
-            <span>사용자 목록</span>
-            <button class="btn btn-secondary btn-sm" onclick="showAdminUsers()">🔄 새로고침</button>
-          </div>
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr><th>사용자</th><th>역할</th><th>상태</th><th>사용량</th><th>잔여</th></tr>
-              </thead>
-              <tbody id="usersTableBody">
-                <tr><td colspan="5">로딩 중...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
-
-      const result = await callAPI('getUsageStats', { token: authToken });
-      
-      if (result.ok) {
-        const users = result.users;
-        const total = users.length;
-        const active = users.filter(u => u.status === 'ACTIVE').length;
-        const totalUsed = users.reduce((sum, u) => sum + (u.token_used || 0), 0);
-
-        document.getElementById('statsGrid').innerHTML = `
-          <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">전체 사용자</div></div>
-          <div class="stat-card"><div class="stat-value">${active}</div><div class="stat-label">활성 사용자</div></div>
-          <div class="stat-card"><div class="stat-value">${totalUsed.toLocaleString()}</div><div class="stat-label">총 사용량</div></div>
+            const row = document.createElement('div');
+            row.className = 'feature-row';
+            row.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
+            row.innerHTML = `
+            <input type="text" class="feature-icon" placeholder="🎯" value="${data.icon || ''}" style="width: 50px; text-align: center; font-size: 18px;">
+            <input type="text" class="feature-title" placeholder="기능 제목" value="${data.title || ''}" style="width: 120px;">
+            <textarea class="feature-desc" placeholder="기능 설명 (Shift+Enter로 줄바꿈)" rows="2" style="flex: 1; resize: vertical;">${data.desc || ''}</textarea>
+            <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()" style="padding: 4px 8px; height: auto;">✕</button>
         `;
+            container.appendChild(row);
+        }
 
-        document.getElementById('usersTableBody').innerHTML = users.map(u => {
-          const pct = u.usage_percent || 0;
-          const barClass = pct >= 90 ? 'danger' : pct >= 70 ? 'warn' : 'ok';
-          const unlimited = u.role === 'ADMIN' || u.token_limit < 0;
-          
-          return `
-            <tr>
-              <td><strong>${u.display_name}</strong><br><span style="font-size:11px;color:var(--text-muted)">${u.user_id}</span></td>
-              <td>${u.role}</td>
-              <td><span class="status-badge ${u.status === 'ACTIVE' ? 'active' : 'inactive'}">${u.status}</span></td>
-              <td>${unlimited ? '∞' : `<div style="display:flex;align-items:center;gap:8px"><div class="usage-bar"><div class="usage-fill ${barClass}" style="width:${pct}%"></div></div>${u.token_used.toLocaleString()}</div>`}</td>
-              <td>${unlimited ? '무제한' : u.token_remaining.toLocaleString()}</td>
-            </tr>
-          `;
-        }).join('');
-      }
-    }
+        function addGuideRow(data = {}) {
+            const container = document.getElementById('guideContainer');
+            const idx = container.children.length;
 
-    async function showAdminLogs() {
-      document.querySelectorAll('.app-item').forEach(el => {
-        el.classList.toggle('active', el.dataset.id === 'admin-logs');
-      });
+            const row = document.createElement('div');
+            row.className = 'guide-row';
+            row.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
+            row.innerHTML = `
+            <span style="width: 24px; height: 24px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">${idx + 1}</span>
+            <input type="text" class="guide-title" placeholder="단계 제목" value="${data.title || ''}" style="width: 150px;">
+            <input type="text" class="guide-desc" placeholder="단계 설명" value="${data.desc || ''}" style="flex: 1;">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeGuideRow(this)" style="padding: 4px 8px; height: auto;">✕</button>
+        `;
+            container.appendChild(row);
+        }
 
-      document.getElementById('contentArea').innerHTML = `
-        <div class="admin-header">
-          <h1 class="admin-title">📋 접속 로그</h1>
-          <p class="admin-subtitle">사용자들의 로그인 및 앱 실행 기록입니다.</p>
-        </div>
-        <div class="table-section">
-          <div class="table-header">
-            <span>최근 접속 기록</span>
-            <button class="btn btn-secondary btn-sm" onclick="showAdminLogs()">🔄 새로고침</button>
-          </div>
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr><th>시간</th><th>사용자</th><th>액션</th><th>앱</th></tr>
-              </thead>
-              <tbody id="logsTableBody">
-                <tr><td colspan="4">로딩 중...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
+        function removeGuideRow(btn) {
+            btn.parentElement.remove();
+            // 번호 다시 매기기
+            const rows = document.querySelectorAll('#guideContainer .guide-row');
+            rows.forEach((row, idx) => {
+                row.querySelector('span').textContent = idx + 1;
+            });
+        }
 
-      const result = await callAPI('getAccessLogs', { token: authToken, limit: 100 });
-      
-      if (result.ok) {
-        document.getElementById('logsTableBody').innerHTML = result.logs.length 
-          ? result.logs.map(log => `
-              <tr>
-                <td>${log.timestamp}</td>
-                <td>${log.user_id}</td>
-                <td>${log.action}</td>
-                <td>${log.app_id || '-'}</td>
-              </tr>
-            `).join('')
-          : '<tr><td colspan="4">로그가 없습니다.</td></tr>';
-      }
-    }
+        function addDownloadRow(data = {}) {
+            const container = document.getElementById('downloadsContainer');
 
-    // =====================================================================
-    // 앱 실행
-    // =====================================================================
-    function launchApp() {
-      if (!selectedApp || !currentUser) return;
-      openAppViewer(selectedApp.url, selectedApp.name, selectedApp.icon);
-    }
+            const row = document.createElement('div');
+            row.className = 'download-row';
+            row.style.cssText = 'background: var(--card); padding: 12px; border-radius: 8px; margin-bottom: 8px;';
+            row.innerHTML = `
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" class="dl-icon" placeholder="🖥️" value="${data.icon || '📦'}" style="width: 50px; text-align: center; font-size: 18px;">
+                    <input type="text" class="dl-name" placeholder="파일 이름" value="${data.name || ''}" style="flex: 1;">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.download-row').remove()" style="padding: 4px 8px; height: auto;">✕</button>
+                </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" class="dl-desc" placeholder="파일 설명" value="${data.desc || ''}" style="flex: 1;">
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" class="dl-platform" placeholder="플랫폼 (Windows 64bit)" value="${data.platform || ''}" style="width: 140px;">
+                    <input type="text" class="dl-version" placeholder="버전" value="${data.version || ''}" style="width: 80px;">
+                    <input type="url" class="dl-url" placeholder="다운로드 URL" value="${data.url || ''}" style="flex: 1;">
+                </div>
+            `;
+            container.appendChild(row);
+        }
 
-    function openAppViewer(url, title, icon) {
-      document.getElementById('viewerTitle').textContent = title;
-      document.getElementById('viewerIcon').textContent = icon;
-      document.getElementById('iframeLoading').style.display = 'block';
-      
-      const separator = url.includes('?') ? '&' : '?';
-      document.getElementById('contentFrame').src = url + separator + 'launcher_token=' + authToken;
-      
-      document.getElementById('appViewer').classList.add('show');
-      document.body.style.overflow = 'hidden';
-    }
+        function collectFeatures() {
+            const rows = document.querySelectorAll('#featuresContainer .feature-row');
+            const features = [];
+            rows.forEach(row => {
+                const icon = row.querySelector('.feature-icon').value.trim();
+                const title = row.querySelector('.feature-title').value.trim();
+                const desc = row.querySelector('.feature-desc').value.trim();
+                if (title) features.push({ icon: icon || '✨', title, desc });
+            });
+            return features;
+        }
 
-    function closeAppViewer() {
-      document.getElementById('appViewer').classList.remove('show');
-      document.getElementById('contentFrame').src = '';
-      document.body.style.overflow = '';
-    }
+        function collectGuide() {
+            const rows = document.querySelectorAll('#guideContainer .guide-row');
+            const guide = [];
+            rows.forEach(row => {
+                const title = row.querySelector('.guide-title').value.trim();
+                const desc = row.querySelector('.guide-desc').value.trim();
+                if (title) guide.push({ title, desc });
+            });
+            return guide;
+        }
 
-    function hideLoading() {
-      document.getElementById('iframeLoading').style.display = 'none';
-    }
+        function collectDownloads() {
+            const rows = document.querySelectorAll('#downloadsContainer .download-row');
+            const downloads = [];
+            rows.forEach(row => {
+                const name = row.querySelector('.dl-name').value.trim();
+                const desc = row.querySelector('.dl-desc').value.trim();
+                const icon = row.querySelector('.dl-icon').value.trim();
+                const platform = row.querySelector('.dl-platform').value.trim();
+                const version = row.querySelector('.dl-version').value.trim();
+                const url = row.querySelector('.dl-url').value.trim();
+                if (name && url) downloads.push({ name, desc, icon: icon || '📦', platform, version, url });
+            });
+            return downloads;
+        }
 
-    // =====================================================================
-    // 키보드 이벤트
-    // =====================================================================
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeAppViewer();
-        closeLoginModal();
-      }
-      if (e.key === 'Enter' && document.getElementById('loginModal').classList.contains('show')) {
-        handleLogin();
-      }
-    });
+        async function confirmDeleteApp(appId) {
+            const app = APPS.find(a => a.id === appId);
+            if (!app) return;
 
-    // =====================================================================
-    // 모달 외부 클릭
-    // =====================================================================
-    document.getElementById('loginModal').addEventListener('click', (e) => {
-      if (e.target.id === 'loginModal') closeLoginModal();
-    });
+            if (!confirm(`정말 "${app.name}" 앱을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+                return;
+            }
 
-    // =====================================================================
-    // 시작
-    // =====================================================================
-    init();
-  </script>
+            const result = await callAPI('deleteApp', { token: authToken, appId });
+
+            if (result.ok) {
+                await refreshApps();
+                if (currentTab === 'admin-apps') {
+                    renderAdminApps();
+                }
+            }
+        }  
+
+        // =====================================================================
+        // 공지사항 관리 (Admin)
+        // =====================================================================
+        let editingNotice = null;
+
+        function showAdminNotices() {
+            selectedApp = null;
+            currentTab = 'admin-notices';
+            document.querySelectorAll('.app-item').forEach(el => el.classList.remove('active'));
+            document.querySelector('[data-id="admin-notices"]')?.classList.add('active');
+            renderAdminNotices();
+        }
+
+        async function renderAdminNotices() {
+            document.getElementById('contentArea').innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--text-muted);">
+                        <div class="spinner"></div>
+                        <span style="margin-left: 12px;">공지사항 불러오는 중...</span>
+                    </div>
+                `;
+
+            await loadNotices();
+
+            document.getElementById('contentArea').innerHTML = `
+                    <div class="admin-header">
+                        <h1 class="admin-title">📢 공지사항 관리</h1>
+                        <p class="admin-subtitle">공지사항을 추가하고 관리할 수 있습니다.</p>
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <button class="btn btn-primary" onclick="openAddNoticeModal()">
+                            <span style="margin-right: 6px;">➕</span> 새 공지 추가
+                        </button>
+                    </div>
+
+                    ${NEWS.length === 0 ? `
+                        <div style="background: var(--card); border-radius: 12px; padding: 60px; text-align: center; border: 2px dashed var(--line);">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                            <div style="font-size: 18px; margin-bottom: 8px; color: var(--text);">등록된 공지사항이 없습니다</div>
+                            <div style="color: var(--text-muted); margin-bottom: 20px;">새 공지를 추가하여 사용자에게 알림을 전달하세요</div>
+                            <button class="btn btn-primary" onclick="openAddNoticeModal()">➕ 첫 번째 공지 추가</button>
+                        </div>
+                    ` : `
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            ${NEWS.map(notice => `
+                                <div style="background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--line); ${notice.active === false ? 'opacity: 0.6;' : ''}">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                                        <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+                                            <span class="notice-tag ${notice.tag || ''}" style="flex-shrink: 0;">${getNoticeTagLabel(notice.tag)}</span>
+                                            <div style="flex: 1; min-width: 0;">
+                                                <div style="font-weight: 600; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                    ${notice.active === false ? '🔒 ' : ''}${notice.title || '(제목 없음)'}
+                                                </div>
+                                                <div style="font-size: 12px; color: var(--text-muted);">
+                                                    📅 ${notice.date || '-'} ${notice.active === false ? '• 비공개' : '• 공개 중'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                            <button class="btn btn-secondary btn-sm" onclick="toggleNoticePreview('${notice.id}')" style="padding: 6px 12px; height: auto;">
+                                                👁️ 미리보기
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm" onclick="openEditNoticeModal('${notice.id}')" style="padding: 6px 12px; height: auto;">
+                                                ✏️ 수정
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="confirmDeleteNotice('${notice.id}')" style="padding: 6px 12px; height: auto;">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="notice-preview-${notice.id}" class="hidden" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line);">
+                                        <div style="background: var(--bg); padding: 16px; border-radius: 8px; font-size: 14px; line-height: 1.6;">
+                                            ${(notice.content || '').replace(/\n/g, '<br>')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                `;
+        }
+
+        function getNoticeTagLabel(tag) {
+            const labels = {
+                'notice': '📌 공지',
+                'update': '🆕 업데이트',
+                'event': '🎉 이벤트',
+                'maintenance': '🔧 점검'
+            };
+            return labels[tag] || '📋 일반';
+        }
+
+        function toggleNoticePreview(noticeId) {
+            const el = document.getElementById(`notice-preview-${noticeId}`);
+            if (el) {
+                el.classList.toggle('hidden');
+            }
+        }
+
+        function openAddNoticeModal() {
+            editingNotice = null;
+            document.getElementById('noticeModalTitle').textContent = '새 공지 추가';
+            document.getElementById('noticeForm').reset();
+            document.getElementById('noticeActiveInput').checked = true;
+
+            // 오늘 날짜 기본값
+            const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
+            document.getElementById('noticeDateInput').value = today;
+
+            document.getElementById('noticeModal').classList.add('show');
+        }
+
+        function openEditNoticeModal(noticeId) {
+            editingNotice = NEWS.find(n => n.id === noticeId);
+            if (!editingNotice) return;
+
+            document.getElementById('noticeModalTitle').textContent = '공지 수정';
+            document.getElementById('noticeDateInput').value = editingNotice.date || '';
+            document.getElementById('noticeTagInput').value = editingNotice.tag || '';
+            document.getElementById('noticeTitleInput').value = editingNotice.title || '';
+            document.getElementById('noticeContentInput').value = editingNotice.content || '';
+            document.getElementById('noticeActiveInput').checked = editingNotice.active !== false;
+
+            document.getElementById('noticeModal').classList.add('show');
+        }
+
+        function closeNoticeModal() {
+            document.getElementById('noticeModal').classList.remove('show');
+            editingNotice = null;
+        }
+
+        async function saveNotice() {
+            const noticeData = {
+                date: document.getElementById('noticeDateInput').value.trim(),
+                tag: document.getElementById('noticeTagInput').value.trim(),
+                title: document.getElementById('noticeTitleInput').value.trim(),
+                content: document.getElementById('noticeContentInput').value.trim(),
+                active: document.getElementById('noticeActiveInput').checked
+            };
+
+            if (!noticeData.title) {
+                alert('제목은 필수입니다.');
+                return;
+            }
+
+            const btn = document.getElementById('saveNoticeBtn');
+            btn.disabled = true;
+            btn.textContent = '저장 중...';
+
+            let result;
+            if (editingNotice) {
+                result = await callAPI('updateNotice', { token: authToken, noticeId: editingNotice.id, noticeData });
+            } else {
+                result = await callAPI('addNotice', { token: authToken, noticeData });
+            }
+
+            btn.disabled = false;
+            btn.textContent = '저장';
+
+            if (result.ok) {
+                closeNoticeModal();
+                await refreshNotices();
+                renderAdminNotices();
+            } else {
+                alert('저장 실패: ' + (result.reason || '알 수 없는 오류'));
+            }
+        }
+
+        async function confirmDeleteNotice(noticeId) {
+            const notice = NEWS.find(n => n.id === noticeId);
+            if (!notice) return;
+
+            if (!confirm(`정말 이 공지사항을 삭제하시겠습니까?\n\n"${notice.title}"\n\n이 작업은 되돌릴 수 없습니다.`)) {
+                return;
+            }
+
+            const result = await callAPI('deleteNotice', { token: authToken, noticeId });
+
+            if (result.ok) {
+                await refreshNotices();
+                renderAdminNotices();
+            } else {
+                alert('삭제 실패: ' + (result.reason || '알 수 없는 오류'));
+            }
+        }
+
+        function hideLoading() {
+            document.getElementById('iframeLoading').style.display = 'none';
+        }
+
+
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAppViewer();
+                closeLoginModal();
+                closeLogoutModal();
+                closeEditUserModal();
+                closeAppModal();      // 추가
+                closeNoticeModal();   // 추가
+            }
+            if (e.key === 'Enter' && document.getElementById('loginModal').classList.contains('show')) {
+                handleLogin();
+            }
+        });
+
+        document.getElementById('loginModal').addEventListener('click', (e) => {
+            if (e.target.id === 'loginModal') closeLoginModal();
+        });
+
+        document.getElementById('logoutModal').addEventListener('click', (e) => {
+            if (e.target.id === 'logoutModal') closeLogoutModal();
+        });
+
+        document.getElementById('editUserModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editUserModal') closeEditUserModal();
+        });
+
+        // 페이지 로드 시 초기화
+        init();
+    </script>
 </body>
 </html>
