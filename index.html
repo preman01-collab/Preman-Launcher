@@ -2755,53 +2755,26 @@
             document.getElementById('iframeLoading').style.display = 'block';
 
             const frame = document.getElementById('contentFrame');
-            // 보안 정책 강화 (필요시 allow-downloads 등 추가)
             frame.referrerPolicy = 'no-referrer';
 
-            // 1. 실제 접속할 전체 URL 생성
-            let finalUrl = url;
+            // ★ 직접 URL 사용 (Blob 제거)
             if (authToken && currentUser) {
                 const payload = JSON.stringify({ token: authToken, user: currentUser });
                 const encodedPayload = btoa(unescape(encodeURIComponent(payload)));
                 const separator = url.includes('?') ? '&' : '?';
-                finalUrl = `${url}${separator}launcher_data=${encodedPayload}`;
+                frame.src = `${url}${separator}launcher_data=${encodedPayload}`;
+            } else {
+                frame.src = url;
             }
 
-            // 2. [핵심] Blob URL 생성 (URL 감추기용 껍데기)
-            // 실제 앱 URL(finalUrl)을 품은 HTML 코드를 메모리에 생성합니다.
-            const blobContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <style>
-                        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
-                        iframe { width: 100%; height: 100%; border: none; }
-                    </style>
-                </head>
-                <body>
-                    <iframe src="${finalUrl}" allow="clipboard-read; clipboard-write; geolocation; microphone; camera"></iframe>
-                </body>
-                </html>
-            `;
-
-            const blob = new Blob([blobContent], { type: 'text/html' });
-            const blobUrl = URL.createObjectURL(blob);
-
-            // 3. iframe에 Blob URL 연결
             document.getElementById('appViewer').classList.add('show');
             document.body.style.overflow = 'hidden';
-
-            // 개발자 도구에서는 src="blob:https://..." 로만 보임
-            frame.src = blobUrl;
 
             frame.onload = () => {
                 hideLoading();
                 hideAppLoading();
-                // 메모리 누수 방지를 위해 Blob URL 해제 (약간의 딜레이 후)
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
             };
 
-            // 타임아웃 처리
             setTimeout(() => {
                 hideAppLoading();
             }, 10000);
