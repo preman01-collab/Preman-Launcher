@@ -2,6 +2,7 @@
 <html lang="ko" data-theme="dark">
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="data:,">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preman Launcher</title>
@@ -941,10 +942,10 @@
             transition: all 0.2s;
         }
 
-        .modal-close:hover {
-            background: var(--danger);
-            color: white;
-        }
+            .modal-close:hover {
+                background: var(--danger);
+                color: white;
+            }
 
         .modal-icon {
             width: 56px;
@@ -1438,7 +1439,7 @@
                 <div class="spinner"></div>
                 <div>앱을 불러오는 중...</div>
             </div>
-            <iframe id="contentFrame" class="crop-iframe" onload="hideLoading()"></iframe>
+            <iframe id="contentFrame" class="crop-iframe" onload="if(typeof hideLoading==='function')hideLoading()"></iframe>
         </div>
     </div>
 
