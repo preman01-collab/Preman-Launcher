@@ -1890,27 +1890,54 @@
             document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
         }
 
-        async function callAPI(action, data = {}) {
-            try {
-                // ✅ Electron API 사용
-                if (window.electronAPI) {
-                    return await window.electronAPI.callAPI(action, data);
-                }
+        // JSONP 방식 API 호출 (CORS 우회)
+        function callAPI(action, params = {}) {
+            return new Promise((resolve, reject) => {
+                const API_URL = 'https://script.google.com/macros/s/AKfycbwmjjNZmsyX7YlyamQb_Wk3gTS2aw4JIXZceocJ2etGcK-CtA3jHJCH4GjXYo9cx_EU/exec';
 
-                // 폴백: 브라우저 환경 (개발용)
-                const res = await fetch('https://script.google.com/macros/s/AKfycbwmjjNZmsyX7YlyamQb_Wk3gTS2aw4JIXZceocJ2etGcK-CtA3jHJCH4GjXYo9cx_EU/exec', {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ action, ...data })
-                });
-                return await res.json();
-            } catch (e) {
-                console.error('API Error:', e);
-                return { ok: false, reason: 'NETWORK_ERROR' };
-            }
+                // GET 요청 가능한 읽기 전용 액션들
+                const getActions = ['getApps', 'getNotices', 'getInitData'];
+
+                if (getActions.includes(action)) {
+                    // JSONP 방식
+                    const callbackName = 'jsonp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+                    window[callbackName] = function (data) {
+                        delete window[callbackName];
+                        document.body.removeChild(script);
+                        resolve(data);
+                    };
+
+                    const queryParams = new URLSearchParams({ action, callback: callbackName, ...params });
+                    const script = document.createElement('script');
+                    script.src = `${API_URL}?${queryParams.toString()}`;
+                    script.onerror = () => {
+                        delete window[callbackName];
+                        document.body.removeChild(script);
+                        reject(new Error('JSONP request failed'));
+                    };
+                    document.body.appendChild(script);
+
+                    // 타임아웃
+                    setTimeout(() => {
+                        if (window[callbackName]) {
+                            delete window[callbackName];
+                            reject(new Error('Request timeout'));
+                        }
+                    }, 15000);
+
+                } else {
+                    // POST 요청 (로그인 등) - fetch 사용
+                    fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain' }, // text/plain로 preflight 회피
+                        body: JSON.stringify({ action, ...params })
+                    })
+                        .then(res => res.json())
+                        .then(resolve)
+                        .catch(reject);
+                }
+            });
         }
 
         async function checkSession() {
