@@ -1554,6 +1554,15 @@
                             <input type="text" id="appUpdatedInput" placeholder="2025.01.21">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="appNeedsLocalEngineInput">
+                            🖥️ 로컬 엔진 필요 (새 창으로 열림)
+                        </label>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                            로컬 서버와 통신이 필요한 앱은 체크하세요
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 주요 기능 -->
@@ -2697,35 +2706,41 @@
         }
 
         function openAppViewer(url, title, icon) {
-            document.getElementById('viewerTitle').textContent = title;
-            document.getElementById('viewerIcon').innerHTML = renderIcon(icon, '24px');
-            document.getElementById('iframeLoading').style.display = 'block';
-
-            const frame = document.getElementById('contentFrame');
-            frame.referrerPolicy = 'no-referrer';
-
-
+            let finalUrl = url;
             if (authToken && currentUser) {
                 const payload = JSON.stringify({ token: authToken, user: currentUser });
                 const encodedPayload = btoa(unescape(encodeURIComponent(payload)));
                 const separator = url.includes('?') ? '&' : '?';
-                frame.src = `${url}${separator}launcher_data=${encodedPayload}`;
-            } else {
-                frame.src = url;
+                finalUrl = `${url}${separator}launcher_data=${encodedPayload}`;
             }
-
+            // ★ 로컬 엔진 필요한 앱은 팝업으로 열기
+            if (selectedApp?.needsLocalEngine) {
+                const width = Math.min(1400, screen.width - 100);
+                const height = Math.min(900, screen.height - 100);
+                const left = (screen.width - width) / 2;
+                const top = (screen.height - height) / 2;
+                window.open(
+                    finalUrl,
+                    'PremanApp',
+                    `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`
+                );
+                hideAppLoading();
+                return;
+            }
+            // 기존 iframe 방식
+            document.getElementById('viewerTitle').textContent = title;
+            document.getElementById('viewerIcon').innerHTML = renderIcon(icon, '24px');
+            document.getElementById('iframeLoading').style.display = 'block';
+            const frame = document.getElementById('contentFrame');
+            frame.referrerPolicy = 'no-referrer';
+            frame.src = finalUrl;
             document.getElementById('appViewer').classList.add('show');
             document.body.style.overflow = 'hidden';
-
             frame.onload = () => {
                 hideLoading();
-                hideAppLoading();  // ← 추가: 로딩 오버레이 숨김
-            };
-
-            // 타임아웃 처리 (10초 후 강제로 로딩 숨김)
-            setTimeout(() => {
                 hideAppLoading();
-            }, 10000);
+            };
+            setTimeout(() => hideAppLoading(), 10000);
         }
 
         // =====================================================================
@@ -2827,6 +2842,7 @@
             document.getElementById('appModalTitle').textContent = '새 앱 추가';
             document.getElementById('appForm').reset();
             document.getElementById('appIdInput').disabled = false;
+            document.getElementById('appNeedsLocalEngineInput').checked = false;
 
             // 동적 필드 초기화
             document.getElementById('featuresContainer').innerHTML = '';
@@ -2861,6 +2877,7 @@
             document.getElementById('appTagLabelInput').value = editingApp.tagLabel || '';
             document.getElementById('appAuthorInput').value = editingApp.author || 'Premandata';
             document.getElementById('appUpdatedInput').value = editingApp.updated || '';
+            document.getElementById('appNeedsLocalEngineInput').checked = editingApp.needsLocalEngine || false;
 
             // 동적 필드 초기화 및 로드
             document.getElementById('featuresContainer').innerHTML = '';
@@ -2897,6 +2914,7 @@
                 tagLabel: document.getElementById('appTagLabelInput').value.trim() || tagLabels[selectedTag] || '',
                 author: document.getElementById('appAuthorInput')?.value.trim() || 'Premandata',
                 updated: document.getElementById('appUpdatedInput')?.value.trim() || new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+                needsLocalEngine: document.getElementById('appNeedsLocalEngineInput').checked, 
                 features: collectFeatures(),
                 guide: collectGuide(),
                 downloads: collectDownloads()
