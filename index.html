@@ -573,10 +573,11 @@
 
         .download-section {
             margin-bottom: 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px; /* 1. 요소 사이 간격은 이걸로 통합 관리 */
-            height: auto; /* 2. 높이를 내용물에 맞게 자동으로 늘어나도록 설정 (중요) */
+            display: grid;             /* flex -> grid로 변경 (겹침 현상 원천 차단) */
+            grid-template-columns: 1fr; /* 한 줄에 하나씩 가득 채우기 */
+            gap: 12px;
+            width: 100%;               /* 너비를 명시하여 찌그러짐 방지 */
+            height: auto;
         }
 
         .download-card {
@@ -613,6 +614,8 @@
 
         .download-info {
             flex: 1;
+            min-width: 0;       /* [중요] 텍스트가 길어도 레이아웃이 깨지지 않게 방어 */
+            overflow-wrap: break-word; /* 아주 긴 단어가 있어도 줄바꿈 처리 */
         }
 
         .download-title {
