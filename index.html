@@ -573,11 +573,10 @@
 
         .download-section {
             margin-bottom: 32px;
-            display: grid;             /* flex -> grid로 변경 (겹침 현상 원천 차단) */
-            grid-template-columns: 1fr; /* 한 줄에 하나씩 가득 채우기 */
+            display: flex;
+            flex-direction: column;
             gap: 12px;
-            width: 100%;               /* 너비를 명시하여 찌그러짐 방지 */
-            height: auto;
+            width: 100%;
         }
 
         .download-card {
@@ -585,19 +584,14 @@
             border: 1px solid var(--line);
             border-radius: 12px;
             padding: 20px;
+            /* [핵심 수정] 내부 요소 배치 방식 변경 */
             display: flex;
+            flex-wrap: wrap; /* 공간이 부족하면 자동으로 줄바꿈 (겹침 방지 핵심) */
             align-items: center;
-            gap: 20px;
-            
-            /* [수정됨] 마진 제거: 상위 gap으로 대체하여 계산 오류 방지 */
-            margin-bottom: 0; 
-            
-            /* [추가됨] 겹침 방지: 공간이 부족해도 카드가 찌그러지지 않음 */
-            flex-shrink: 0; 
-        }
+            gap: 16px; /* 요소 간격 */
 
-        .download-card:last-child {
-            margin-bottom: 0;
+            height: auto; /* 높이 자동 조절 */
+            position: relative;
         }
 
         .download-icon {
@@ -609,30 +603,41 @@
             align-items: center;
             justify-content: center;
             font-size: 28px;
+            /* [핵심] 아이콘이 절대 찌그러지지 않도록 고정 */
             flex-shrink: 0;
         }
 
         .download-info {
-            flex: 1;
-            min-width: 0;       /* [중요] 텍스트가 길어도 레이아웃이 깨지지 않게 방어 */
-            overflow-wrap: break-word; /* 아주 긴 단어가 있어도 줄바꿈 처리 */
+            /* [핵심] 텍스트 영역의 최소 너비 보장 (너무 좁아지면 줄바꿈 유도) */
+            flex: 1 1 200px;
+            min-width: 0; /* 텍스트 넘침 방지 안전장치 */
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+
+        .download-card .btn {
+            flex-shrink: 0; /* 버튼 크기 고정 */
+            margin-left: auto; /* 버튼을 오른쪽 끝으로 밀어줌 (공간 충분할 때) */
         }
 
         .download-title {
             font-size: 16px;
             font-weight: 700;
             margin-bottom: 4px;
+            line-height: 1.4;
         }
 
         .download-desc {
             font-size: 13px;
             color: var(--text-muted);
             margin-bottom: 8px;
+            line-height: 1.5;
         }
 
         .download-meta {
             display: flex;
-            gap: 16px;
+            flex-wrap: wrap; /* 메타 정보도 줄바꿈 허용 */
+            gap: 12px;
             font-size: 12px;
             color: var(--text-muted);
         }
@@ -733,18 +738,18 @@
         }
 
         .notice-item.open .notice-content {
-            max-height: 2000px;  /* 500px → 2000px로 증가 */
-            overflow-y: hidden;    /* 스크롤 가능하게 추가 */
+            max-height: 2000px; /* 500px → 2000px로 증가 */
+            overflow-y: hidden; /* 스크롤 가능하게 추가 */
         }
-        
+
         .notice-content-inner {
-        padding: 20px;
-        font-size: 14px;
-        line-height: 1.7;
-        color: var(--text-muted);
-        max-height: calc(60vh - 40px);  /* 패딩 고려 */
-        overflow-y: auto;  /* 내용만 스크롤 */
-       }
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            max-height: calc(60vh - 40px); /* 패딩 고려 */
+            overflow-y: auto; /* 내용만 스크롤 */
+        }
 
             .notice-content-inner p {
                 margin-bottom: 12px;
@@ -1843,11 +1848,11 @@
 
         function showLoadingState() {
             document.getElementById('contentArea').innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-muted);">
-                <div class="spinner" style="width: 50px; height: 50px; margin-bottom: 20px;"></div>
-                <div style="font-size: 16px;">데이터를 불러오는 중...</div>
-            </div>
-        `;
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-muted);">
+                    <div class="spinner" style="width: 50px; height: 50px; margin-bottom: 20px;"></div>
+                    <div style="font-size: 16px;">데이터를 불러오는 중...</div>
+                </div>
+            `;
         }
 
         // [추가] 폼 내부에서 엔터키 입력 시 자동 제출 방지 (textarea 제외)
@@ -1902,13 +1907,13 @@
 
         function showEmptyState() {
             document.getElementById('contentArea').innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-muted);">
-                <div style="font-size: 64px; margin-bottom: 20px;">📭</div>
-                <div style="font-size: 20px; margin-bottom: 8px; color: var(--text);">등록된 앱이 없습니다</div>
-                <div style="font-size: 14px; margin-bottom: 24px;">관리자에게 문의해보세요</div>
-                <button class="btn btn-primary" onclick="openLoginModal()">🔑 로그인</button>
-            </div>
-        `;
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-muted);">
+                    <div style="font-size: 64px; margin-bottom: 20px;">📭</div>
+                    <div style="font-size: 20px; margin-bottom: 8px; color: var(--text);">등록된 앱이 없습니다</div>
+                    <div style="font-size: 14px; margin-bottom: 24px;">관리자에게 문의해보세요</div>
+                    <button class="btn btn-primary" onclick="openLoginModal()">🔑 로그인</button>
+                </div>
+            `;
         }
 
         function hideLoadingState() {
@@ -2119,50 +2124,50 @@
 
             if (!APPS || APPS.length === 0) {
                 listEl.innerHTML = `
-            <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
-                <div style="margin-bottom: 8px;">📭</div>
-                <div>등록된 앱이 없습니다</div>
-            </div>`;
+                <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                    <div style="margin-bottom: 8px;">📭</div>
+                    <div>등록된 앱이 없습니다</div>
+                </div>`;
                 return;
             }
 
             listEl.innerHTML = APPS.map(app => `
-        <div class="app-item ${app.id === selectedApp?.id ? 'active' : ''}" onclick="selectApp('${app.id}')" data-id="${app.id}">
-            <div class="app-icon" style="background: ${app.iconBg || '#6366f1'}; display: flex; align-items: center; justify-content: center;">${renderIcon(app.icon, '24px')}</div>
-            <div class="app-info">
-                <div class="app-name">${app.name}</div>
-                ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || ''}</span>` : ''}
+            <div class="app-item ${app.id === selectedApp?.id ? 'active' : ''}" onclick="selectApp('${app.id}')" data-id="${app.id}">
+                <div class="app-icon" style="background: ${app.iconBg || '#6366f1'}; display: flex; align-items: center; justify-content: center;">${renderIcon(app.icon, '24px')}</div>
+                <div class="app-info">
+                    <div class="app-name">${app.name}</div>
+                    ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || ''}</span>` : ''}
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
         }
-        
+
 
         function renderAdminMenu() {
             document.getElementById('adminMenu').innerHTML = `
-            <div class="app-item" onclick="showAdminApps()" data-id="admin-apps">
-                <div class="app-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%)">📱</div>
-                <div class="app-info"><div class="app-name">앱 관리</div></div>
-            </div>
-            <div class="app-item" onclick="showAdminNotices()" data-id="admin-notices">
-                <div class="app-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)">📢</div>
-                <div class="app-info"><div class="app-name">공지사항 관리</div></div>
-            </div>
-            <div class="app-item" onclick="showAdminUsers()" data-id="admin-users">
-                <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)">👥</div>
-                <div class="app-info"><div class="app-name">사용자 관리</div></div>
-            </div>
-            <div class="app-item" onclick="showAdminLogs()" data-id="admin-logs">
-                <div class="app-icon" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%)">📋</div>
-                <div class="app-info"><div class="app-name">접속 로그</div></div>
-            </div>
-            <div class="app-item" onclick="showAdminTokenLogs()" data-id="admin-token-logs">
-            <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">🪙</div>
-            <div class="app-info"><div class="app-name">토큰 내역</div></div>
-            </div>
-                         `;
+                <div class="app-item" onclick="showAdminApps()" data-id="admin-apps">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%)">📱</div>
+                    <div class="app-info"><div class="app-name">앱 관리</div></div>
+                </div>
+                <div class="app-item" onclick="showAdminNotices()" data-id="admin-notices">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)">📢</div>
+                    <div class="app-info"><div class="app-name">공지사항 관리</div></div>
+                </div>
+                <div class="app-item" onclick="showAdminUsers()" data-id="admin-users">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)">👥</div>
+                    <div class="app-info"><div class="app-name">사용자 관리</div></div>
+                </div>
+                <div class="app-item" onclick="showAdminLogs()" data-id="admin-logs">
+                    <div class="app-icon" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%)">📋</div>
+                    <div class="app-info"><div class="app-name">접속 로그</div></div>
+                </div>
+                <div class="app-item" onclick="showAdminTokenLogs()" data-id="admin-token-logs">
+                <div class="app-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">🪙</div>
+                <div class="app-info"><div class="app-name">토큰 내역</div></div>
+                </div>
+                             `;
         }
-        
+
 
         function showTab(tab) {
             currentTab = tab;
@@ -2209,12 +2214,12 @@
         function renderAppDetail() {
             if (!selectedApp) {
                 document.getElementById('contentArea').innerHTML = `
-                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-muted);">
-                            <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
-                            <div style="font-size: 18px; margin-bottom: 8px;">앱을 선택해주세요</div>
-                            <div style="font-size: 14px;">좌측 메뉴에서 실행할 앱을 선택하세요</div>
-                        </div>
-                    `;
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: var(--text-muted);">
+                                <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                                <div style="font-size: 18px; margin-bottom: 8px;">앱을 선택해주세요</div>
+                                <div style="font-size: 14px;">좌측 메뉴에서 실행할 앱을 선택하세요</div>
+                            </div>
+                        `;
                 return;
             }
 
@@ -2240,90 +2245,90 @@
                 const canDownload = isLoggedIn && hasPermission;
 
                 downloadHtml = `
-                        <div class="download-section">
-                            <h2 class="section-title">📥 다운로드</h2>
-                            ${app.downloads.map(dl => `
-                                <div class="download-card">
-                                    <div class="download-icon">${dl.icon}</div>
-                                    <div class="download-info">
-                                        <div class="download-title">${dl.name}</div>
-                                        <div class="download-desc">${dl.desc}</div>
-                                        <div class="download-meta">
-                                            <span>💻 ${dl.platform}</span>
-                                            <span>📦 ${dl.version}</span>
-                                            <span>📁 ${dl.url ? '파일 있음' : '준비 중'}</span>
+                            <div class="download-section">
+                                <h2 class="section-title">📥 다운로드</h2>
+                                ${app.downloads.map(dl => `
+                                    <div class="download-card">
+                                        <div class="download-icon">${dl.icon}</div>
+                                        <div class="download-info">
+                                            <div class="download-title">${dl.name}</div>
+                                            <div class="download-desc">${dl.desc}</div>
+                                            <div class="download-meta">
+                                                <span>💻 ${dl.platform}</span>
+                                                <span>📦 ${dl.version}</span>
+                                                <span>📁 ${dl.url ? '파일 있음' : '준비 중'}</span>
+                                            </div>
+                                            ${!canDownload ? '<div class="download-login-hint">⚠️ 로그인 후 다운로드 가능합니다</div>' : ''}
                                         </div>
-                                        ${!canDownload ? '<div class="download-login-hint">⚠️ 로그인 후 다운로드 가능합니다</div>' : ''}
-                                    </div>
-                                    ${canDownload
+                                        ${canDownload
                         ? `<a href="${dl.url}" target="_blank" class="btn btn-primary btn-sm">다운로드</a>`
                         : `<button class="btn btn-secondary btn-sm" disabled>🔒 다운로드</button>`
                     }
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
             }
 
             // ★ 여기서부터 백틱(`) 하나로 전체 HTML을 감쌉니다.
             document.getElementById('contentArea').innerHTML = `
-                    <div class="app-header">
-                        <div class="app-header-icon" style="background: ${app.iconBg}; display: flex; align-items: center; justify-content: center;">
-                            ${renderIcon(app.icon, '40px')}
-                        </div>
-                        <div class="app-header-info">
-                            <h1 class="app-header-title">
-                                ${app.name}
-                                ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || ''}</span>` : ''}
-                            </h1>
-                            <p class="app-header-desc">${app.desc || ''}</p>
-                            <div class="app-meta">
-                                ${app.version ? `<span class="app-meta-item">📦 ${app.version}</span>` : ''}
-                                ${app.author ? `<span class="app-meta-item">👤 ${app.author}</span>` : ''}
-                                ${app.category ? `<span class="app-meta-item">${getCategoryIcon(app.category)} ${app.category}</span>` : ''}
-                                ${app.updated ? `<span class="app-meta-item">🕐 ${app.updated}</span>` : ''}
+                        <div class="app-header">
+                            <div class="app-header-icon" style="background: ${app.iconBg}; display: flex; align-items: center; justify-content: center;">
+                                ${renderIcon(app.icon, '40px')}
                             </div>
-                        </div>
-                    </div>
-                    <div class="launch-section">
-                        <div class="launch-row">
-                            <div class="launch-info">
-                                <div class="launch-title">앱 실행</div>
-                                <div class="launch-hint">${launchHint}</div>
-                            </div>
-                            <button class="btn btn-primary btn-lg" ${launchBtnDisabled ? 'disabled' : ''} onclick="${isLoggedIn ? 'launchApp()' : 'openLoginModal()'}">
-                                ${isLoggedIn ? '▶ 실행하기' : '🔑 로그인 후 실행'}
-                            </button>
-                        </div>
-                    </div>
-                    ${downloadHtml}
-                    <div class="features-section">
-                        <h2 class="section-title">✨ 주요 기능</h2>
-                        <div class="features-grid">
-                            ${(app.features || []).map(f => `
-                                <div class="feature-card">
-                                    <div class="feature-icon">${f.icon}</div>
-                                    <div class="feature-title">${f.title}</div>
-                                    <div class="feature-desc">${(f.desc || '').replace(/\n/g, '<br>')}</div>
+                            <div class="app-header-info">
+                                <h1 class="app-header-title">
+                                    ${app.name}
+                                    ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || ''}</span>` : ''}
+                                </h1>
+                                <p class="app-header-desc">${app.desc || ''}</p>
+                                <div class="app-meta">
+                                    ${app.version ? `<span class="app-meta-item">📦 ${app.version}</span>` : ''}
+                                    ${app.author ? `<span class="app-meta-item">👤 ${app.author}</span>` : ''}
+                                    ${app.category ? `<span class="app-meta-item">${getCategoryIcon(app.category)} ${app.category}</span>` : ''}
+                                    ${app.updated ? `<span class="app-meta-item">🕐 ${app.updated}</span>` : ''}
                                 </div>
-                            `).join('')}
+                            </div>
                         </div>
-                    </div>
-                    <div class="guide-section">
-                        <h2 class="section-title">📖 사용 가이드</h2>
-                        <div class="guide-steps">
-                            ${(app.guide || []).map((step, i) => `
-                                <div class="guide-step">
-                                    <div class="step-number">${i + 1}</div>
-                                    <div class="step-content">
-                                        <div class="step-title">${step.title}</div>
-                                        <div class="step-desc">${(step.desc || '').replace(/\n/g, '<br>')}</div>
+                        <div class="launch-section">
+                            <div class="launch-row">
+                                <div class="launch-info">
+                                    <div class="launch-title">앱 실행</div>
+                                    <div class="launch-hint">${launchHint}</div>
+                                </div>
+                                <button class="btn btn-primary btn-lg" ${launchBtnDisabled ? 'disabled' : ''} onclick="${isLoggedIn ? 'launchApp()' : 'openLoginModal()'}">
+                                    ${isLoggedIn ? '▶ 실행하기' : '🔑 로그인 후 실행'}
+                                </button>
+                            </div>
+                        </div>
+                        ${downloadHtml}
+                        <div class="features-section">
+                            <h2 class="section-title">✨ 주요 기능</h2>
+                            <div class="features-grid">
+                                ${(app.features || []).map(f => `
+                                    <div class="feature-card">
+                                        <div class="feature-icon">${f.icon}</div>
+                                        <div class="feature-title">${f.title}</div>
+                                        <div class="feature-desc">${(f.desc || '').replace(/\n/g, '<br>')}</div>
                                     </div>
-                                </div>
-                            `).join('')}
+                                `).join('')}
+                            </div>
                         </div>
-                    </div>
-                `;
+                        <div class="guide-section">
+                            <h2 class="section-title">📖 사용 가이드</h2>
+                            <div class="guide-steps">
+                                ${(app.guide || []).map((step, i) => `
+                                    <div class="guide-step">
+                                        <div class="step-number">${i + 1}</div>
+                                        <div class="step-content">
+                                            <div class="step-title">${step.title}</div>
+                                            <div class="step-desc">${(step.desc || '').replace(/\n/g, '<br>')}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
         }
 
         function renderNotice() {
@@ -2420,26 +2425,26 @@
             document.querySelectorAll('.app-item').forEach(el => el.classList.toggle('active', el.dataset.id === 'admin-users'));
 
             document.getElementById('contentArea').innerHTML = `
-                                <div class="admin-header">
-                                  <h1 class="admin-title">👥 사용자 관리</h1>
-                                  <p class="admin-subtitle">등록된 사용자와 사용량을 관리합니다.</p>
-                                </div>
-                                <div class="stats-grid" id="statsGrid">
-                                  <div class="stat-card"><div class="stat-value">-</div><div class="stat-label">로딩 중...</div></div>
-                                </div>
-                                <div class="table-section">
-                                  <div class="table-header">
-                                    <span>사용자 목록</span>
-                                    <button class="btn btn-secondary btn-sm" onclick="showAdminUsers()">🔄 새로고침</button>
-                                  </div>
-                                  <div class="table-scroll">
-                                    <table class="data-table">
-                                      <thead><tr><th>사용자</th><th>역할</th><th>상태</th><th>사용량</th><th>잔여</th><th>관리</th></tr></thead>
-                                      <tbody id="usersTableBody"><tr><td colspan="6">로딩 중...</td></tr></tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              `;
+                                    <div class="admin-header">
+                                      <h1 class="admin-title">👥 사용자 관리</h1>
+                                      <p class="admin-subtitle">등록된 사용자와 사용량을 관리합니다.</p>
+                                    </div>
+                                    <div class="stats-grid" id="statsGrid">
+                                      <div class="stat-card"><div class="stat-value">-</div><div class="stat-label">로딩 중...</div></div>
+                                    </div>
+                                    <div class="table-section">
+                                      <div class="table-header">
+                                        <span>사용자 목록</span>
+                                        <button class="btn btn-secondary btn-sm" onclick="showAdminUsers()">🔄 새로고침</button>
+                                      </div>
+                                      <div class="table-scroll">
+                                        <table class="data-table">
+                                          <thead><tr><th>사용자</th><th>역할</th><th>상태</th><th>사용량</th><th>잔여</th><th>관리</th></tr></thead>
+                                          <tbody id="usersTableBody"><tr><td colspan="6">로딩 중...</td></tr></tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  `;
 
             const result = await callAPI('getUsageStats', { token: authToken });
 
@@ -2451,10 +2456,10 @@
                 const totalUsed = users.reduce((sum, u) => sum + (u.token_used || 0), 0);
 
                 document.getElementById('statsGrid').innerHTML = `
-                                  <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">전체 사용자</div></div>
-                                  <div class="stat-card"><div class="stat-value">${active}</div><div class="stat-label">활성 사용자</div></div>
-                                  <div class="stat-card"><div class="stat-value">${totalUsed.toLocaleString()}</div><div class="stat-label">총 사용량</div></div>
-                                `;
+                                      <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">전체 사용자</div></div>
+                                      <div class="stat-card"><div class="stat-value">${active}</div><div class="stat-label">활성 사용자</div></div>
+                                      <div class="stat-card"><div class="stat-value">${totalUsed.toLocaleString()}</div><div class="stat-label">총 사용량</div></div>
+                                    `;
 
                 document.getElementById('usersTableBody').innerHTML = users.map(u => {
                     const tokenUsed = u.token_used || 0;
@@ -2465,15 +2470,15 @@
                     const unlimited = u.role === 'ADMIN' || tokenLimit < 0;
 
                     return `
-                                    <tr>
-                                      <td><strong>${u.display_name || u.user_id}</strong><br><span style="font-size:11px;color:var(--text-muted)">${u.user_id}</span></td>
-                                      <td>${u.role || 'USER'}</td>
-                                      <td><span class="status-badge ${(u.status === 'ACTIVE') ? 'active' : 'inactive'}">${u.status || 'UNKNOWN'}</span></td>
-                                      <td>${unlimited ? '∞' : `<div style="display:flex;align-items:center;gap:8px"><div class="usage-bar"><div class="usage-fill ${barClass}" style="width:${pct}%"></div></div>${tokenUsed.toLocaleString()}</div>`}</td>
-                                      <td>${unlimited ? '무제한' : tokenRemaining.toLocaleString()}</td>
-                                      <td><div class="action-btns"><button class="btn btn-secondary btn-xs" onclick="openEditUserModal('${u.user_id}')">✏️ 편집</button></div></td>
-                                    </tr>
-                                  `;
+                                        <tr>
+                                          <td><strong>${u.display_name || u.user_id}</strong><br><span style="font-size:11px;color:var(--text-muted)">${u.user_id}</span></td>
+                                          <td>${u.role || 'USER'}</td>
+                                          <td><span class="status-badge ${(u.status === 'ACTIVE') ? 'active' : 'inactive'}">${u.status || 'UNKNOWN'}</span></td>
+                                          <td>${unlimited ? '∞' : `<div style="display:flex;align-items:center;gap:8px"><div class="usage-bar"><div class="usage-fill ${barClass}" style="width:${pct}%"></div></div>${tokenUsed.toLocaleString()}</div>`}</td>
+                                          <td>${unlimited ? '무제한' : tokenRemaining.toLocaleString()}</td>
+                                          <td><div class="action-btns"><button class="btn btn-secondary btn-xs" onclick="openEditUserModal('${u.user_id}')">✏️ 편집</button></div></td>
+                                        </tr>
+                                      `;
                 }).join('');
             } else {
                 document.getElementById('usersTableBody').innerHTML = `<tr><td colspan="6">데이터를 불러올 수 없습니다. ${result.reason || ''}</td></tr>`;
@@ -2497,11 +2502,11 @@
             const permsContainer = document.getElementById('editPermissions');
             const userPerms = user.permissions || {};
             permsContainer.innerHTML = APPS.map(app => `
-                                <label class="form-checkbox">
-                                  <input type="checkbox" name="perm_${app.id}" ${userPerms[app.id] || user.role === 'ADMIN' ? 'checked' : ''}>
-                                  ${app.icon} ${app.name}
-                                </label>
-                              `).join('');
+                                    <label class="form-checkbox">
+                                      <input type="checkbox" name="perm_${app.id}" ${userPerms[app.id] || user.role === 'ADMIN' ? 'checked' : ''}>
+                                      ${app.icon} ${app.name}
+                                    </label>
+                                  `).join('');
 
             document.getElementById('editUserError').classList.add('hidden');
             document.getElementById('editUserSuccess').classList.add('hidden');
@@ -2575,34 +2580,34 @@
 
             // 화면 초기화
             document.getElementById('contentArea').innerHTML = `
-                <div class="admin-header">
-                    <h1 class="admin-title">🪙 토큰 사용 내역</h1>
-                    <p class="admin-subtitle">사용자들의 토큰 사용 및 충전 기록입니다.</p>
-                </div>
-                <div class="table-section">
-                    <div class="table-header">
-                        <span>최근 100건</span>
-                        <button class="btn btn-secondary btn-sm" onclick="showAdminTokenLogs()">🔄 새로고침</button>
+                    <div class="admin-header">
+                        <h1 class="admin-title">🪙 토큰 사용 내역</h1>
+                        <p class="admin-subtitle">사용자들의 토큰 사용 및 충전 기록입니다.</p>
                     </div>
-                    <div class="table-scroll">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>일시</th>
-                                    <th>사용자</th>
-                                    <th>앱</th>
-                                    <th>유형</th>
-                                    <th>변동</th>
-                                    <th>잔액</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tokenLogsBody">
-                                <tr><td colspan="6" style="text-align:center; padding: 20px;">데이터를 불러오는 중...</td></tr>
-                            </tbody>
-                        </table>
+                    <div class="table-section">
+                        <div class="table-header">
+                            <span>최근 100건</span>
+                            <button class="btn btn-secondary btn-sm" onclick="showAdminTokenLogs()">🔄 새로고침</button>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>일시</th>
+                                        <th>사용자</th>
+                                        <th>앱</th>
+                                        <th>유형</th>
+                                        <th>변동</th>
+                                        <th>잔액</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tokenLogsBody">
+                                    <tr><td colspan="6" style="text-align:center; padding: 20px;">데이터를 불러오는 중...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
 
             // API 호출
             const result = await callAPI('getTokenLogs', { token: authToken, limit: 100 });
@@ -2626,17 +2631,17 @@
                         : log.timestamp;
 
                     return `
-                        <tr>
-                            <td>${timeStr}</td>
-                            <td><strong>${log.user_id}</strong></td>
-                            <td>${log.app_id || '-'}</td>
-                            <td><span class="status-badge ${isUse ? 'inactive' : 'active'}">${log.action}</span></td>
-                            <td style="font-weight:bold; color: ${isUse ? '#ef4444' : '#10b981'}">
-                                ${sign}${log.amount.toLocaleString()}
-                            </td>
-                            <td>${log.balance < 0 ? '∞' : log.balance.toLocaleString()}</td>
-                        </tr>
-                    `;
+                            <tr>
+                                <td>${timeStr}</td>
+                                <td><strong>${log.user_id}</strong></td>
+                                <td>${log.app_id || '-'}</td>
+                                <td><span class="status-badge ${isUse ? 'inactive' : 'active'}">${log.action}</span></td>
+                                <td style="font-weight:bold; color: ${isUse ? '#ef4444' : '#10b981'}">
+                                    ${sign}${log.amount.toLocaleString()}
+                                </td>
+                                <td>${log.balance < 0 ? '∞' : log.balance.toLocaleString()}</td>
+                            </tr>
+                        `;
                 }).join('');
             } else {
                 document.getElementById('tokenLogsBody').innerHTML =
@@ -2648,23 +2653,23 @@
             document.querySelectorAll('.app-item').forEach(el => el.classList.toggle('active', el.dataset.id === 'admin-logs'));
 
             document.getElementById('contentArea').innerHTML = `
-                                <div class="admin-header">
-                                  <h1 class="admin-title">📋 접속 로그</h1>
-                                  <p class="admin-subtitle">사용자들의 최근 접속 기록입니다.</p>
-                                </div>
-                                <div class="table-section">
-                                  <div class="table-header">
-                                    <span>최근 접속 기록</span>
-                                    <button class="btn btn-secondary btn-sm" onclick="showAdminLogs()">🔄 새로고침</button>
-                                  </div>
-                                  <div class="table-scroll">
-                                    <table class="data-table">
-                                      <thead><tr><th>최근 접속</th><th>사용자</th><th>액션</th><th>앱</th></tr></thead>
-                                      <tbody id="logsTableBody"><tr><td colspan="4">로딩 중...</td></tr></tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              `;
+                                    <div class="admin-header">
+                                      <h1 class="admin-title">📋 접속 로그</h1>
+                                      <p class="admin-subtitle">사용자들의 최근 접속 기록입니다.</p>
+                                    </div>
+                                    <div class="table-section">
+                                      <div class="table-header">
+                                        <span>최근 접속 기록</span>
+                                        <button class="btn btn-secondary btn-sm" onclick="showAdminLogs()">🔄 새로고침</button>
+                                      </div>
+                                      <div class="table-scroll">
+                                        <table class="data-table">
+                                          <thead><tr><th>최근 접속</th><th>사용자</th><th>액션</th><th>앱</th></tr></thead>
+                                          <tbody id="logsTableBody"><tr><td colspan="4">로딩 중...</td></tr></tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  `;
 
             const result = await callAPI('getAccessLogs', { token: authToken, limit: 100 });
 
@@ -2778,75 +2783,75 @@
 
         async function renderAdminApps() {
             document.getElementById('contentArea').innerHTML = `
-                        <div style="display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--text-muted);">
-                            <div class="spinner"></div>
-                            <span style="margin-left: 12px;">앱 목록 불러오는 중...</span>
-                        </div>
-                    `;
+                            <div style="display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--text-muted);">
+                                <div class="spinner"></div>
+                                <span style="margin-left: 12px;">앱 목록 불러오는 중...</span>
+                            </div>
+                        `;
 
             await loadApps();
 
             document.getElementById('contentArea').innerHTML = `
-                        <div class="admin-header">
-                            <h1 class="admin-title">📱 앱 관리</h1>
-                            <p class="admin-subtitle">등록된 앱을 관리하고 새 앱을 추가할 수 있습니다.</p>
-                        </div>
-                        <div style="margin-bottom: 24px;">
-                            <button class="btn btn-primary" onclick="openAddAppModal()">
-                                <span style="margin-right: 6px;">➕</span> 새 앱 추가
-                            </button>
-                        </div>
-                        ${APPS.length === 0 ? `
-                            <div style="background: var(--card); border-radius: 12px; padding: 60px; text-align: center; border: 2px dashed var(--line);">
-                                <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
-                                <div style="font-size: 18px; margin-bottom: 8px; color: var(--text);">등록된 앱이 없습니다</div>
-                                <div style="color: var(--text-muted); margin-bottom: 20px;">새 앱을 추가하여 시작하세요</div>
-                                <button class="btn btn-primary" onclick="openAddAppModal()">➕ 첫 번째 앱 추가</button>
+                            <div class="admin-header">
+                                <h1 class="admin-title">📱 앱 관리</h1>
+                                <p class="admin-subtitle">등록된 앱을 관리하고 새 앱을 추가할 수 있습니다.</p>
                             </div>
-                        ` : `
-                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
-                                ${APPS.map((app, idx) => `
-                                    <div class="admin-app-card" style="background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--line); transition: all 0.2s;">
-                                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                                            <div class="app-icon" style="background: ${app.iconBg || '#6366f1'}; width: 56px; height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">${renderIcon(app.icon, '28px')}</div>
-                                            <div style="flex: 1; min-width: 0;">
-                                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                                    <strong style="font-size: 16px;">${app.name}</strong>
-                                                    ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || app.tag}</span>` : ''}
+                            <div style="margin-bottom: 24px;">
+                                <button class="btn btn-primary" onclick="openAddAppModal()">
+                                    <span style="margin-right: 6px;">➕</span> 새 앱 추가
+                                </button>
+                            </div>
+                            ${APPS.length === 0 ? `
+                                <div style="background: var(--card); border-radius: 12px; padding: 60px; text-align: center; border: 2px dashed var(--line);">
+                                    <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                                    <div style="font-size: 18px; margin-bottom: 8px; color: var(--text);">등록된 앱이 없습니다</div>
+                                    <div style="color: var(--text-muted); margin-bottom: 20px;">새 앱을 추가하여 시작하세요</div>
+                                    <button class="btn btn-primary" onclick="openAddAppModal()">➕ 첫 번째 앱 추가</button>
+                                </div>
+                            ` : `
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+                                    ${APPS.map((app, idx) => `
+                                        <div class="admin-app-card" style="background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--line); transition: all 0.2s;">
+                                            <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                                                <div class="app-icon" style="background: ${app.iconBg || '#6366f1'}; width: 56px; height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">${renderIcon(app.icon, '28px')}</div>
+                                                <div style="flex: 1; min-width: 0;">
+                                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                                        <strong style="font-size: 16px;">${app.name}</strong>
+                                                        ${app.tag ? `<span class="app-tag ${app.tag}">${app.tagLabel || app.tag}</span>` : ''}
+                                                    </div>
+                                                    <div style="color: var(--text-muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${app.desc || '설명 없음'}</div>
                                                 </div>
-                                                <div style="color: var(--text-muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${app.desc || '설명 없음'}</div>
+                                            </div>
+                                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; font-size: 12px; color: var(--text-muted);">
+                                                <div style="background: var(--bg); padding: 8px; border-radius: 6px; text-align: center;">
+                                                    <div style="font-weight: 600; color: var(--text);">${app.id}</div>
+                                                    <div>ID</div>
+                                                </div>
+                                                <div style="background: var(--bg); padding: 8px; border-radius: 6px; text-align: center;">
+                                                    <div style="font-weight: 600; color: var(--text);">${app.version || '-'}</div>
+                                                    <div>버전</div>
+                                                </div>
+                                                <div style="background: var(--bg); padding: 8px; border-radius: 6px; text-align: center;">
+                                                    <div style="font-weight: 600; color: var(--text);">${app.category || '-'}</div>
+                                                    <div>카테고리</div>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; gap: 8px;">
+                                                <button class="btn btn-secondary btn-sm" onclick="openEditAppModal('${app.id}')" style="flex: 1;">
+                                                    ✏️ 수정
+                                                </button>
+                                                <button class="btn btn-secondary btn-sm" onclick="previewApp('${app.id}')" style="flex: 1;">
+                                                    👁️ 미리보기
+                                                </button>
+                                                <button class="btn btn-danger btn-sm" onclick="confirmDeleteApp('${app.id}')" style="width: 44px;">
+                                                    🗑️
+                                                </button>
                                             </div>
                                         </div>
-                                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; font-size: 12px; color: var(--text-muted);">
-                                            <div style="background: var(--bg); padding: 8px; border-radius: 6px; text-align: center;">
-                                                <div style="font-weight: 600; color: var(--text);">${app.id}</div>
-                                                <div>ID</div>
-                                            </div>
-                                            <div style="background: var(--bg); padding: 8px; border-radius: 6px; text-align: center;">
-                                                <div style="font-weight: 600; color: var(--text);">${app.version || '-'}</div>
-                                                <div>버전</div>
-                                            </div>
-                                            <div style="background: var(--bg); padding: 8px; border-radius: 6px; text-align: center;">
-                                                <div style="font-weight: 600; color: var(--text);">${app.category || '-'}</div>
-                                                <div>카테고리</div>
-                                            </div>
-                                        </div>
-                                        <div style="display: flex; gap: 8px;">
-                                            <button class="btn btn-secondary btn-sm" onclick="openEditAppModal('${app.id}')" style="flex: 1;">
-                                                ✏️ 수정
-                                            </button>
-                                            <button class="btn btn-secondary btn-sm" onclick="previewApp('${app.id}')" style="flex: 1;">
-                                                👁️ 미리보기
-                                            </button>
-                                            <button class="btn btn-danger btn-sm" onclick="confirmDeleteApp('${app.id}')" style="width: 44px;">
-                                                🗑️
-                                            </button>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        `}
-                    `;
+                                    `).join('')}
+                                </div>
+                            `}
+                        `;
         }
 
         function previewApp(appId) {
@@ -2934,7 +2939,7 @@
                 tagLabel: document.getElementById('appTagLabelInput').value.trim() || tagLabels[selectedTag] || '',
                 author: document.getElementById('appAuthorInput')?.value.trim() || 'Premandata',
                 updated: document.getElementById('appUpdatedInput')?.value.trim() || new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-                needsLocalEngine: document.getElementById('appNeedsLocalEngineInput').checked, 
+                needsLocalEngine: document.getElementById('appNeedsLocalEngineInput').checked,
                 features: collectFeatures(),
                 guide: collectGuide(),
                 downloads: collectDownloads()
@@ -2987,11 +2992,11 @@
             row.className = 'feature-row';
             row.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
             row.innerHTML = `
-                <input type="text" class="feature-icon" placeholder="🎯" value="${data.icon || ''}" style="width: 50px; text-align: center; font-size: 18px;">
-                <input type="text" class="feature-title" placeholder="기능 제목" value="${data.title || ''}" style="width: 120px;">
-                <textarea class="feature-desc" placeholder="기능 설명 (Shift+Enter로 줄바꿈)" rows="2" style="flex: 1; resize: vertical;">${data.desc || ''}</textarea>
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()" style="padding: 4px 8px; height: auto;">✕</button>
-            `;
+                    <input type="text" class="feature-icon" placeholder="🎯" value="${data.icon || ''}" style="width: 50px; text-align: center; font-size: 18px;">
+                    <input type="text" class="feature-title" placeholder="기능 제목" value="${data.title || ''}" style="width: 120px;">
+                    <textarea class="feature-desc" placeholder="기능 설명 (Shift+Enter로 줄바꿈)" rows="2" style="flex: 1; resize: vertical;">${data.desc || ''}</textarea>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()" style="padding: 4px 8px; height: auto;">✕</button>
+                `;
             container.appendChild(row);
         }
 
@@ -3003,11 +3008,11 @@
             row.className = 'guide-row';
             row.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start;';
             row.innerHTML = `
-            <span style="width: 24px; height: 24px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; margin-top: 8px;">${idx + 1}</span>
-            <input type="text" class="guide-title" placeholder="단계 제목" value="${data.title || ''}" style="width: 150px; height: 36px;">
-            <textarea class="guide-desc" placeholder="단계 설명 (Shift+Enter로 줄바꿈)" rows="2" style="flex: 1; resize: vertical;">${data.desc || ''}</textarea>
-            <button type="button" class="btn btn-danger btn-sm" onclick="removeGuideRow(this)" style="padding: 4px 8px; height: auto; margin-top: 4px;">✕</button>
-    `;
+                <span style="width: 24px; height: 24px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; margin-top: 8px;">${idx + 1}</span>
+                <input type="text" class="guide-title" placeholder="단계 제목" value="${data.title || ''}" style="width: 150px; height: 36px;">
+                <textarea class="guide-desc" placeholder="단계 설명 (Shift+Enter로 줄바꿈)" rows="2" style="flex: 1; resize: vertical;">${data.desc || ''}</textarea>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeGuideRow(this)" style="padding: 4px 8px; height: auto; margin-top: 4px;">✕</button>
+        `;
             container.appendChild(row);
         }
 
@@ -3027,20 +3032,20 @@
             row.className = 'download-row';
             row.style.cssText = 'background: var(--card); padding: 12px; border-radius: 8px; margin-bottom: 8px;';
             row.innerHTML = `
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                        <input type="text" class="dl-icon" placeholder="🖥️" value="${data.icon || '📦'}" style="width: 50px; text-align: center; font-size: 18px;">
-                        <input type="text" class="dl-name" placeholder="파일 이름" value="${data.name || ''}" style="flex: 1;">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.download-row').remove()" style="padding: 4px 8px; height: auto;">✕</button>
-                    </div>
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                        <input type="text" class="dl-desc" placeholder="파일 설명" value="${data.desc || ''}" style="flex: 1;">
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" class="dl-platform" placeholder="플랫폼 (Windows 64bit)" value="${data.platform || ''}" style="width: 140px;">
-                        <input type="text" class="dl-version" placeholder="버전" value="${data.version || ''}" style="width: 80px;">
-                        <input type="url" class="dl-url" placeholder="다운로드 URL" value="${data.url || ''}" style="flex: 1;">
-                    </div>
-                `;
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <input type="text" class="dl-icon" placeholder="🖥️" value="${data.icon || '📦'}" style="width: 50px; text-align: center; font-size: 18px;">
+                            <input type="text" class="dl-name" placeholder="파일 이름" value="${data.name || ''}" style="flex: 1;">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.download-row').remove()" style="padding: 4px 8px; height: auto;">✕</button>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <input type="text" class="dl-desc" placeholder="파일 설명" value="${data.desc || ''}" style="flex: 1;">
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" class="dl-platform" placeholder="플랫폼 (Windows 64bit)" value="${data.platform || ''}" style="width: 140px;">
+                            <input type="text" class="dl-version" placeholder="버전" value="${data.version || ''}" style="width: 80px;">
+                            <input type="url" class="dl-url" placeholder="다운로드 URL" value="${data.url || ''}" style="flex: 1;">
+                        </div>
+                    `;
             container.appendChild(row);
         }
 
@@ -3115,69 +3120,69 @@
 
         async function renderAdminNotices() {
             document.getElementById('contentArea').innerHTML = `
-                        <div style="display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--text-muted);">
-                            <div class="spinner"></div>
-                            <span style="margin-left: 12px;">공지사항 불러오는 중...</span>
-                        </div>
-                    `;
+                            <div style="display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--text-muted);">
+                                <div class="spinner"></div>
+                                <span style="margin-left: 12px;">공지사항 불러오는 중...</span>
+                            </div>
+                        `;
 
             await loadNotices();
 
             document.getElementById('contentArea').innerHTML = `
-                        <div class="admin-header">
-                            <h1 class="admin-title">📢 공지사항 관리</h1>
-                            <p class="admin-subtitle">공지사항을 추가하고 관리할 수 있습니다.</p>
-                        </div>
-                        <div style="margin-bottom: 24px;">
-                            <button class="btn btn-primary" onclick="openAddNoticeModal()">
-                                <span style="margin-right: 6px;">➕</span> 새 공지 추가
-                            </button>
-                        </div>
-                        ${NEWS.length === 0 ? `
-                            <div style="background: var(--card); border-radius: 12px; padding: 60px; text-align: center; border: 2px dashed var(--line);">
-                                <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
-                                <div style="font-size: 18px; margin-bottom: 8px; color: var(--text);">등록된 공지사항이 없습니다</div>
-                                <div style="color: var(--text-muted); margin-bottom: 20px;">새 공지를 추가하여 사용자에게 알림을 전달하세요</div>
-                                <button class="btn btn-primary" onclick="openAddNoticeModal()">➕ 첫 번째 공지 추가</button>
+                            <div class="admin-header">
+                                <h1 class="admin-title">📢 공지사항 관리</h1>
+                                <p class="admin-subtitle">공지사항을 추가하고 관리할 수 있습니다.</p>
                             </div>
-                        ` : `
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
-                                ${NEWS.map(notice => `
-                                    <div style="background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--line); ${notice.active === false ? 'opacity: 0.6;' : ''}">
-                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
-                                            <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
-                                                <span class="notice-tag ${notice.tag || ''}" style="flex-shrink: 0;">${getNoticeTagLabel(notice.tag)}</span>
-                                                <div style="flex: 1; min-width: 0;">
-                                                    <div style="font-weight: 600; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                                        ${notice.active === false ? '🔒 ' : ''}${notice.title || '(제목 없음)'}
-                                                    </div>
-                                                    <div style="font-size: 12px; color: var(--text-muted);">
-                                                        📅 ${notice.date || '-'} ${notice.active === false ? '• 비공개' : '• 공개 중'}
+                            <div style="margin-bottom: 24px;">
+                                <button class="btn btn-primary" onclick="openAddNoticeModal()">
+                                    <span style="margin-right: 6px;">➕</span> 새 공지 추가
+                                </button>
+                            </div>
+                            ${NEWS.length === 0 ? `
+                                <div style="background: var(--card); border-radius: 12px; padding: 60px; text-align: center; border: 2px dashed var(--line);">
+                                    <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                                    <div style="font-size: 18px; margin-bottom: 8px; color: var(--text);">등록된 공지사항이 없습니다</div>
+                                    <div style="color: var(--text-muted); margin-bottom: 20px;">새 공지를 추가하여 사용자에게 알림을 전달하세요</div>
+                                    <button class="btn btn-primary" onclick="openAddNoticeModal()">➕ 첫 번째 공지 추가</button>
+                                </div>
+                            ` : `
+                                <div style="display: flex; flex-direction: column; gap: 12px;">
+                                    ${NEWS.map(notice => `
+                                        <div style="background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--line); ${notice.active === false ? 'opacity: 0.6;' : ''}">
+                                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                                                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+                                                    <span class="notice-tag ${notice.tag || ''}" style="flex-shrink: 0;">${getNoticeTagLabel(notice.tag)}</span>
+                                                    <div style="flex: 1; min-width: 0;">
+                                                        <div style="font-weight: 600; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                            ${notice.active === false ? '🔒 ' : ''}${notice.title || '(제목 없음)'}
+                                                        </div>
+                                                        <div style="font-size: 12px; color: var(--text-muted);">
+                                                            📅 ${notice.date || '-'} ${notice.active === false ? '• 비공개' : '• 공개 중'}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                                    <button class="btn btn-secondary btn-sm" onclick="toggleNoticePreview('${notice.id}')" style="padding: 6px 12px; height: auto;">
+                                                        👁️ 미리보기
+                                                    </button>
+                                                    <button class="btn btn-secondary btn-sm" onclick="openEditNoticeModal('${notice.id}')" style="padding: 6px 12px; height: auto;">
+                                                        ✏️ 수정
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" onclick="confirmDeleteNotice('${notice.id}')" style="padding: 6px 12px; height: auto;">
+                                                        🗑️
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                                                <button class="btn btn-secondary btn-sm" onclick="toggleNoticePreview('${notice.id}')" style="padding: 6px 12px; height: auto;">
-                                                    👁️ 미리보기
-                                                </button>
-                                                <button class="btn btn-secondary btn-sm" onclick="openEditNoticeModal('${notice.id}')" style="padding: 6px 12px; height: auto;">
-                                                    ✏️ 수정
-                                                </button>
-                                                <button class="btn btn-danger btn-sm" onclick="confirmDeleteNotice('${notice.id}')" style="padding: 6px 12px; height: auto;">
-                                                    🗑️
-                                                </button>
+                                            <div id="notice-preview-${notice.id}" class="hidden" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line);">
+                                                <div style="background: var(--bg); padding: 16px; border-radius: 8px; font-size: 14px; line-height: 1.6;">
+                                                    ${(notice.content || '').replace(/\n/g, '<br>')}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div id="notice-preview-${notice.id}" class="hidden" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line);">
-                                            <div style="background: var(--bg); padding: 16px; border-radius: 8px; font-size: 14px; line-height: 1.6;">
-                                                ${(notice.content || '').replace(/\n/g, '<br>')}
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        `}
-                    `;
+                                    `).join('')}
+                                </div>
+                            `}
+                        `;
         }
 
         function getNoticeTagLabel(tag) {
