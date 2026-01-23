@@ -717,15 +717,17 @@
 
         .notice-item.open .notice-content {
             max-height: 2000px;  /* 500px → 2000px로 증가 */
-            overflow-y: auto;    /* 스크롤 가능하게 추가 */
+            overflow-y: hidden;    /* 스크롤 가능하게 추가 */
         }
         
         .notice-content-inner {
-                padding: 20px;
-                font-size: 14px;
-                line-height: 1.7;
-                color: var(--text-muted);
-        }
+        padding: 20px;
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--text-muted);
+        max-height: calc(60vh - 40px);  /* 패딩 고려 */
+        overflow-y: auto;  /* 내용만 스크롤 */
+       }
 
             .notice-content-inner p {
                 margin-bottom: 12px;
